@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Honda — Financing Configurator</title>
+<title>Global Amity — Financing Configurator</title>
+<link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=1XgvkyspWKeDu-RiBm0rnT2UiyHLfH03Z&sz=w256">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -551,7 +552,7 @@
     <!-- state: entry (default) -->
     <div id="gateStateEntry" style="display:none;">
       <div class="login-sub">Enter your work email to request access. New requests need admin approval before you can use this tool.</div>
-      <input type="email" class="login-input" id="loginEmailInput" placeholder="you@company.com" autocomplete="off"
+      <input type="email" class="login-input" id="loginEmailInput" placeholder="you@globalamity.com.my" autocomplete="off"
         onkeydown="if(event.key==='Enter') submitAccessRequest()">
       <div class="login-error" id="loginError"></div>
       <button class="login-btn" id="loginSubmitBtn" onclick="submitAccessRequest()">Request Access</button>
@@ -1008,6 +1009,10 @@
       <label>Customer email</label>
       <input type="email" class="num-input" id="quoteCustomerEmail" placeholder="customer@email.com" style="font-family:'IBM Plex Sans',sans-serif;">
     </div>
+    <div class="field">
+      <label>Sales advisor email</label>
+      <input type="email" class="num-input" id="quoteSaEmail" placeholder="sa@yourdealer.com" style="font-family:'IBM Plex Sans',sans-serif;">
+    </div>
     <div class="modal-status" id="quoteStatus"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeQuotationModal()">Cancel</button>
@@ -1021,7 +1026,7 @@
 // ══════════════════════════════════════════════════════════════════
 // DATA LAYER — UNCHANGED FROM ORIGINAL, DO NOT ALTER CALCULATIONS
 // ══════════════════════════════════════════════════════════════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyZzak0ezYpJSX3KIKcUwLRAmoxdXgCvc5YK1XwsLF9bXlb111-0tDwDksdrxlfXC5vyw/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyC0uwb6RsOMvq5NorR9fDmldQHKhMK6IilqFbZiwt9pCGvGM3_GskwuwZ4BD2n_oj5ng/exec";
 
 let DATA = [];
 const FALLBACK_DATA = [{"VARIANT":"CITY S","MODEL":"CITY","SELLING PRICE":84560,"OTR W/O INSURANCE":84900,"SUM INSURED":84900,"BASIC PREMIUM":2908,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"CITY E","MODEL":"CITY","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"CITY V","MODEL":"CITY","SELLING PRICE":94560,"OTR W/O INSURANCE":94900,"SUM INSURED":94900,"BASIC PREMIUM":3168,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"CITY RS","MODEL":"CITY","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"CITY E:HEV RS","MODEL":"CITY","SELLING PRICE":111560,"OTR W/O INSURANCE":111900,"SUM INSURED":111900,"BASIC PREMIUM":3610,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"WR-V 1.5L S","MODEL":"WR-V","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA"},{"VARIANT":"WR-V 1.5L E","MODEL":"WR-V","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA"},{"VARIANT":"WR-V 1.5L V","MODEL":"WR-V","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA"},{"VARIANT":"WR-V 1.5L RS","MODEL":"WR-V","SELLING PRICE":107560,"OTR W/O INSURANCE":107900,"SUM INSURED":107900,"BASIC PREMIUM":3506,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA"},{"VARIANT":"CR-V 1.5L S","MODEL":"CR-V","SELLING PRICE":159530,"OTR W/O INSURANCE":159900,"SUM INSURED":159900,"BASIC PREMIUM":4408,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA"},{"VARIANT":"CR-V 2.0L E:HEV E","MODEL":"CR-V","SELLING PRICE":177362.8,"OTR W/O INSURANCE":178200,"SUM INSURED":178200,"BASIC PREMIUM":4902,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA"},{"VARIANT":"CR-V 1.5L V","MODEL":"CR-V","SELLING PRICE":181530,"OTR W/O INSURANCE":181900,"SUM INSURED":181900,"BASIC PREMIUM":4980,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA"},{"VARIANT":"CR-V 2.0L E:HEV RS","MODEL":"CR-V","SELLING PRICE":195062.8,"OTR W/O INSURANCE":195900,"SUM INSURED":195900,"BASIC PREMIUM":5344,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK S","MODEL":"CITY HATCHBACK","SELLING PRICE":85560,"OTR W/O INSURANCE":85900,"SUM INSURED":85900,"BASIC PREMIUM":2934,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK E","MODEL":"CITY HATCHBACK","SELLING PRICE":90560,"OTR W/O INSURANCE":90900,"SUM INSURED":90900,"BASIC PREMIUM":3064,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK V","MODEL":"CITY HATCHBACK","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK RS","MODEL":"CITY HATCHBACK","SELLING PRICE":100560,"OTR W/O INSURANCE":100900,"SUM INSURED":100900,"BASIC PREMIUM":3324,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK E:HEV RS","MODEL":"CITY HATCHBACK","SELLING PRICE":112560,"OTR W/O INSURANCE":112900,"SUM INSURED":112900,"BASIC PREMIUM":3636,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CIVIC 1.5L E","MODEL":"CIVIC","SELLING PRICE":133560,"OTR W/O INSURANCE":133900,"SUM INSURED":133900,"BASIC PREMIUM":4182,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA"},{"VARIANT":"CIVIC 1.5L V","MODEL":"CIVIC","SELLING PRICE":144560,"OTR W/O INSURANCE":144900,"SUM INSURED":144900,"BASIC PREMIUM":4468,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA"},{"VARIANT":"CIVIC 1.5L RS","MODEL":"CIVIC","SELLING PRICE":149560,"OTR W/O INSURANCE":149900,"SUM INSURED":149900,"BASIC PREMIUM":4598,"REBATE":12000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA"},{"VARIANT":"CIVIC 2.0L E:HEV RS","MODEL":"CIVIC","SELLING PRICE":167123.5,"OTR W/O INSURANCE":167900,"SUM INSURED":167900,"BASIC PREMIUM":5066,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5L S","MODEL":"HR-V","SELLING PRICE":115530,"OTR W/O INSURANCE":115900,"SUM INSURED":115900,"BASIC PREMIUM":3714,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5T E","MODEL":"HR-V","SELLING PRICE":130530,"OTR W/O INSURANCE":130900,"SUM INSURED":130900,"BASIC PREMIUM":4104,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5T V","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5L E:HEV RS","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":13000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"E:N1","MODEL":"E:N1","SELLING PRICE":149402,"OTR W/O INSURANCE":150010,"SUM INSURED":150000,"BASIC PREMIUM":4624,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1YdIZVYxr6qns1QgdYjJBnU9nBLQNBNnq","BRAND":"HONDA"},{"VARIANT":"PRELUDE","MODEL":"PRELUDE","SELLING PRICE":277173.5,"OTR W/O INSURANCE":277950,"SUM INSURED":278000,"BASIC PREMIUM":7952,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=12pyWxzalqK10BDjtbU-l5Ar0z-tszXFc","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5T V 360","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5L E:HEV RS 360","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"}];;
@@ -1490,6 +1495,7 @@ function generateQuotation(){
     Total OTR: ${document.getElementById('statOTRPlusIns').textContent} · Monthly: ${document.getElementById('statMonthly').textContent} · Tenure: ${document.getElementById('tenureLabel').textContent}`;
   document.getElementById('quoteCustomerName').value = '';
   document.getElementById('quoteCustomerEmail').value = '';
+  document.getElementById('quoteSaEmail').value = currentAccessEmail || '';
   const statusEl = document.getElementById('quoteStatus');
   statusEl.textContent = '';
   statusEl.className = 'modal-status';
@@ -1502,6 +1508,7 @@ async function sendQuotation(){
   if(!selected) return;
   const name = document.getElementById('quoteCustomerName').value.trim();
   const email = document.getElementById('quoteCustomerEmail').value.trim();
+  const saEmail = document.getElementById('quoteSaEmail').value.trim();
   const statusEl = document.getElementById('quoteStatus');
   const btn = document.getElementById('quoteSendBtn');
 
@@ -1512,7 +1519,13 @@ async function sendQuotation(){
   }
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   if(!emailOk){
-    statusEl.textContent = 'Please enter a valid email address.';
+    statusEl.textContent = 'Please enter a valid customer email address.';
+    statusEl.className = 'modal-status err';
+    return;
+  }
+  const saEmailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(saEmail);
+  if(!saEmailOk){
+    statusEl.textContent = 'Please enter a valid sales advisor email address.';
     statusEl.className = 'modal-status err';
     return;
   }
@@ -1524,6 +1537,7 @@ async function sendQuotation(){
     action: 'sendQuotation',
     customerName: name,
     customerEmail: email,
+    saEmail: saEmail,
     vehicle: `${selected.BRAND} ${selected.MODEL} — ${selected.VARIANT}`,
     model: selected.MODEL,
     variant: selected.VARIANT,
