@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Global Amity - Financing Configurator</title>
-<link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=1XgvkyspWKeDu-RiBm0rnT2UiyHLfH03Z&sz=w256">
+<title>Honda — Financing Configurator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -160,6 +159,23 @@
   .step-sub{font-size:11px;color:var(--muted-2);margin-top:1px;font-family:'IBM Plex Mono',monospace;}
   .step-caption{display:none;} /* keeps #selectedTitle valid but visually hidden — hero name covers this role */
 
+  /* ============================= COLLAPSIBLE STEP CARDS =============================
+     Each card can fold down to its header once a section is done, so the page doesn't
+     stay four full forms tall the whole time. */
+  .step-head{cursor:pointer;user-select:none;}
+  .step-summary{
+    display:none;flex:1;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11.5px;
+    color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .step-chevron{
+    flex-shrink:0;background:none;border:none;color:var(--muted-2);font-size:12px;cursor:pointer;
+    padding:2px 0 2px 8px;transition:transform .2s ease;line-height:1;
+  }
+  .card.collapsed .step-head{margin-bottom:0;padding-bottom:12px;}
+  .card.collapsed .step-body{display:none;}
+  .card.collapsed .step-summary{display:block;}
+  .card.collapsed .step-chevron{transform:rotate(-90deg);}
+
   .field{margin-bottom:16px;}
   .field:last-child{margin-bottom:0;}
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -170,6 +186,18 @@
   }
   .field label .val{color:var(--accent);font-weight:700;}
   .chip-note{font-size:11px;color:var(--muted-2);margin-top:7px;font-family:'IBM Plex Mono',monospace;}
+
+  /* payment method toggle — Loan vs Cash Buyer */
+  .method-toggle{display:flex;gap:1px;background:var(--line);border:1px solid var(--line-strong);}
+  .method-btn{
+    flex:1;padding:11px 10px;border:none;background:var(--card);color:var(--text);
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;
+    cursor:pointer;transition:all .15s ease;
+  }
+  .method-btn:hover{background:var(--card-hover);}
+  .method-btn.active{background:var(--accent);color:#fff;}
+  #financingInputs.cash-disabled,
+  #financingInputsLive.cash-disabled{opacity:.35;pointer-events:none;filter:grayscale(.4);}
 
   .premium-select, .num-input{
     width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);
@@ -356,51 +384,152 @@
   .scale-btn:hover{background:var(--card-hover);color:var(--text);}
   .scale-btn.is-compact{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
 
-  /* ── LIVE MODE — decluttered layout for filming, not just a shrink.
-     Non-essential detail is hidden and the key figures are made bigger,
-     since a uniform zoom-out just makes everything harder to read on camera. ── */
+  /* ── LIVE MODE — a distinct on-camera skin, not just a shrink.
+     Sales advisors film this against a phone screen for TikTok Live, so it
+     switches to a high-contrast, glanceable layout: a glowing red hero card
+     for the headline number, big pill buttons instead of fiddly sliders, and
+     everything non-essential stripped out. Background follows the existing
+     light/dark toggle rather than forcing one — white background works fine
+     with the red hero card, so no override is needed here. ── */
+  body.live-mode .live-pill{display:inline-flex;}
   body.live-mode .src-badge,
   body.live-mode .logo-text small,
   body.live-mode .gauge-wrap,
   body.live-mode .breakdown,
   body.live-mode footer.legal,
-  body.live-mode .stat-detail,
+  body.live-mode .steps,
+  body.live-mode .stat-grid,
+  body.live-mode .chart-card,
   body.live-mode #btnPrint{
     display:none !important;
   }
+  body.live-mode .live-panel{display:block;}
   body.live-mode .hero-grid,
-  body.live-mode .results-grid,
-  body.live-mode .steps{
+  body.live-mode .results-grid{
     grid-template-columns:1fr !important;
   }
   body.live-mode .wrap{padding:0 16px;}
   body.live-mode .hero{padding:14px 0 2px;}
-  body.live-mode .hero-image-wrap{aspect-ratio:16/9;border-radius:0;}
-  body.live-mode .hero-image{padding:12px;}
+  body.live-mode .hero-image-wrap{aspect-ratio:auto;height:130px;border-radius:14px;}
+  body.live-mode .hero-image{padding:8px;}
   body.live-mode .hero-info{margin-top:12px;}
   body.live-mode .hero-eyebrow{margin-bottom:5px;}
-  body.live-mode .hero-name{font-size:clamp(20px,5.5vw,28px);margin-bottom:8px;}
-  body.live-mode .hero-price{margin-bottom:10px;}
-  body.live-mode .hero-from{padding-top:10px;font-size:12.5px;}
-  body.live-mode .hero-from span{font-size:19px;}
-  body.live-mode .steps{margin-top:18px;gap:1px;}
-  body.live-mode .card{padding:16px;}
-  body.live-mode .step-head{margin-bottom:12px;}
-  body.live-mode .step-num{width:22px;height:22px;font-size:11px;border-radius:0;}
-  body.live-mode .field{margin-bottom:12px;}
+  body.live-mode .hero-name{font-size:clamp(22px,6vw,32px);margin-bottom:8px;}
+  body.live-mode .hero-price{margin-bottom:0;}
+  body.live-mode .hero-from{display:none;}
   body.live-mode .results{margin-top:18px;}
-  body.live-mode .monthly-card{padding:20px;}
-  body.live-mode .monthly-label{font-size:10px;}
-  body.live-mode .monthly-value{font-size:clamp(30px,8vw,42px);margin:6px 0 2px;}
-  body.live-mode .stat-grid{grid-template-columns:1fr 1fr;gap:1px;margin-top:16px;}
-  body.live-mode .stat{padding:11px 13px;}
-  body.live-mode .stat .s-label{font-size:9.5px;}
-  body.live-mode .stat .s-val{font-size:16px;margin-top:4px;}
   body.live-mode .actions{margin-top:16px;}
   body.live-mode .actions .btn{padding:10px 16px;font-size:12.5px;}
-  body.live-mode .chart-card{margin-top:16px;padding:16px;}
-  body.live-mode .chart-title{font-size:13px;}
-  body.live-mode .chart-sub{font-size:10.5px;margin-bottom:10px;}
+
+  /* LIVE badge, top-left of header */
+  .live-pill{
+    display:none;align-items:center;gap:6px;background:var(--accent);color:#fff;
+    font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:10.5px;letter-spacing:.06em;
+    padding:5px 10px 5px 8px;border-radius:999px;
+  }
+  .live-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:liveDotPulse 1.4s ease-in-out infinite;}
+  @keyframes liveDotPulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+
+  /* quick-select pill panel */
+  .live-panel{display:none;margin-top:22px;}
+  .live-panel-group{margin-bottom:16px;}
+  .live-panel-label{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:9px;
+  }
+  .live-pill-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+  #dpPillRow{grid-template-columns:repeat(6,1fr);gap:6px;}
+  #dpPillRow .quick-pill{padding:12px 2px;font-size:12.5px;}
+  .quick-pill{
+    font-family:'Oswald',sans-serif;font-weight:600;font-size:14px;letter-spacing:.01em;
+    padding:12px 4px;border-radius:10px;text-align:center;cursor:pointer;
+    background:var(--card);border:1px solid var(--line-strong);color:var(--text);
+    transition:all .15s ease;
+  }
+  .quick-pill:hover{background:var(--card-hover);}
+  .quick-pill.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  /* collapsible groups — same fold-to-summary behavior as the desktop step
+     cards, since a live-streamed phone screen needs this even more */
+  .live-group{margin-bottom:18px;border-bottom:1px solid var(--line);padding-bottom:16px;}
+  .live-group:last-of-type{border-bottom:none;padding-bottom:0;}
+  .live-group-head{
+    display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;margin-bottom:11px;
+  }
+  .live-group-head .live-panel-label{margin-bottom:0;flex-shrink:0;}
+  .live-group-summary{
+    display:none;flex:1;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .live-group.collapsed{padding-bottom:0;}
+  .live-group.collapsed .live-group-head{margin-bottom:0;}
+  .live-group.collapsed .live-group-body{display:none;}
+  .live-group.collapsed .live-group-summary{display:block;}
+  .live-group.collapsed .step-chevron{transform:rotate(-90deg);}
+  .live-subrow-label{
+    font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted-2);margin-bottom:8px;
+  }
+
+  .live-chip-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:20px;}
+  .live-chip{
+    background:var(--card);border:1px solid var(--line-strong);border-radius:12px;
+    padding:14px 12px;text-align:center;
+  }
+  .live-chip-icon{font-size:16px;display:block;margin-bottom:8px;}
+  .live-chip-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:5px;line-height:1.3;}
+  .live-chip-val{font-family:'Oswald',sans-serif;font-weight:600;font-size:15px;color:var(--text);}
+
+  .live-input{
+    width:100%;background:var(--card);border:1px solid var(--line-strong);color:var(--text);
+    padding:13px 14px;border-radius:10px;font-family:'IBM Plex Mono',monospace;font-size:15px;
+    appearance:auto;
+  }
+  .live-input:focus{outline:none;border-color:var(--accent);}
+
+  /* the big red hero card — the one deliberate soft/glow moment in an
+     otherwise sharp-edged system, reserved for live mode's headline number */
+  body.live-mode .monthly-card{
+    background:radial-gradient(120% 140% at 15% 0%, #E51830, #7A0713 82%);
+    border-radius:18px;padding:26px 22px;box-shadow:0 20px 50px -18px rgba(213,16,35,.55);
+    position:relative;overflow:hidden;text-align:center;
+  }
+  body.live-mode .monthly-card:before{display:none;}
+  body.live-mode .monthly-label{
+    font-size:11px;color:rgba(255,255,255,.82);text-align:center;letter-spacing:.1em;
+  }
+  body.live-mode .monthly-value{
+    font-size:clamp(38px,11vw,54px);color:#fff;text-align:center;margin:8px 0 0;
+  }
+  body.live-mode .monthly-value span{color:#fff;}
+  body.live-mode .monthly-per{display:none;}
+  .monthly-tenure-badge{
+    display:none;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11px;letter-spacing:.04em;
+    color:#3A2405;background:#F0B94D;padding:7px 16px;border-radius:999px;margin:16px auto 2px;
+    width:fit-content;position:relative;
+  }
+  body.live-mode .monthly-tenure-badge{display:block;}
+
+  /* ambient floating hearts inside the hero card — a nod to TikTok Live's
+     own reaction animation, purely decorative and only shown while live */
+  .live-hearts{display:none;}
+  body.live-mode .live-hearts{
+    display:block;position:absolute;inset:0;pointer-events:none;overflow:hidden;
+  }
+  .live-hearts span{
+    position:absolute;bottom:-20px;color:rgba(255,255,255,.55);font-size:15px;
+    animation:heartFloat 5s ease-in linear infinite;
+  }
+  .live-hearts span:nth-child(1){left:78%;animation-delay:0s;font-size:13px;}
+  .live-hearts span:nth-child(2){left:88%;animation-delay:1.4s;font-size:18px;}
+  .live-hearts span:nth-child(3){left:70%;animation-delay:2.7s;font-size:11px;}
+  .live-hearts span:nth-child(4){left:94%;animation-delay:3.6s;font-size:15px;}
+  @keyframes heartFloat{
+    0%{transform:translateY(0) translateX(0);opacity:0;}
+    12%{opacity:1;}
+    100%{transform:translateY(-220px) translateX(14px);opacity:0;}
+  }
 </style>
 </head>
 <body>
@@ -422,7 +551,7 @@
     <!-- state: entry (default) -->
     <div id="gateStateEntry" style="display:none;">
       <div class="login-sub">Enter your work email to request access. New requests need admin approval before you can use this tool.</div>
-      <input type="email" class="login-input" id="loginEmailInput" placeholder="you@globalamity.com.my" autocomplete="off"
+      <input type="email" class="login-input" id="loginEmailInput" placeholder="you@company.com" autocomplete="off"
         onkeydown="if(event.key==='Enter') submitAccessRequest()">
       <div class="login-error" id="loginError"></div>
       <button class="login-btn" id="loginSubmitBtn" onclick="submitAccessRequest()">Request Access</button>
@@ -458,6 +587,7 @@
 <header class="topbar">
   <div class="topbar-inner">
     <div class="logo-mark">
+      <span class="live-pill" id="livePill"><span class="live-dot"></span>LIVE</span>
       <span class="logo-dot"></span>
       <div class="logo-text">Financing Configurator<small>GLOBAL AMITY SDN. BHD.</small></div>
     </div>
@@ -499,67 +629,73 @@
         <h1 class="hero-name" id="activeName">—</h1>
         <div class="hero-price" id="activePrice"></div>
         <div class="hero-from">
-          <span id="heroMonthly">RM 0</span>estimated monthly instalment*
+          <span id="heroMonthly">RM 0</span><span id="heroMonthlySuffix">estimated monthly instalment*</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ============================= STEP CARDS ============================= -->
-  <section class="steps">
+  <!-- ============================= LIVE MODE QUICK PANEL =============================
+       Hidden by default; shown only in live mode. Mirrors the DP/tenure sliders and
+       three key readouts from the step cards below with large tap targets, since a
+       slider is hard to read and hard to hit precisely on a phone screen recording. -->
+  <section class="live-panel" id="livePanel">
 
-    <!-- STEP 1: VEHICLE -->
-    <div class="card">
-      <div class="step-head">
-        <div class="step-num">1</div>
-        <div><div class="step-title">Vehicle</div><div class="step-sub">Model &amp; variant</div></div>
+    <div class="live-group" id="liveGroupVehicle">
+      <div class="live-group-head" onclick="toggleLiveGroup('liveGroupVehicle')">
+        <div class="live-panel-label">Vehicle</div>
+        <div class="live-group-summary" id="liveSummaryVehicle"></div>
+        <button type="button" class="step-chevron" aria-label="Collapse">▾</button>
       </div>
-      <div class="field">
-        <label>Model</label>
-        <select class="premium-select" id="modelSelect"></select>
-      </div>
-      <div class="field">
-        <label>Variant</label>
-        <select class="premium-select" id="variantSelect"></select>
-      </div>
-      <div class="field">
-        <label>On-the-road price (editable)</label>
-        <input type="text" inputmode="numeric" class="num-input" id="otrOverride" value="0" oninput="formatOtrInput(this); onInput()">
-      </div>
-      <div class="step-caption" id="selectedTitle">Configure financing</div>
-    </div>
-
-    <!-- STEP 2: FINANCING -->
-    <div class="card">
-      <div class="step-head">
-        <div class="step-num">2</div>
-        <div><div class="step-title">Financing</div><div class="step-sub">Down payment &amp; tenure</div></div>
-      </div>
-      <div class="field slider-wrap">
-        <label>Down payment <span class="val" id="dpPctLabel">10%</span></label>
-        <input type="range" id="dpPct" min="0" max="50" value="10" step="1" oninput="onInput()">
-        <div class="chip-note" id="dpAmountNote">RM 0</div>
-      </div>
-      <div class="field slider-wrap">
-        <label>Tenure <span class="val" id="tenureLabel">7 years</span></label>
-        <input type="range" id="tenure" min="1" max="9" value="7" step="1" oninput="onInput()">
-        <div class="chip-note" id="tenureNote">84 months</div>
-      </div>
-      <div class="field">
-        <label>Flat interest rate (p.a.)</label>
-        <input type="number" class="num-input" id="rate" value="2.50" step="0.05" min="0" oninput="onInput()">
+      <div class="live-group-body">
+        <select class="live-input" id="modelSelectLive" onchange="liveSetModel(this)"></select>
+        <select class="live-input" id="variantSelectLive" onchange="liveSetVariant(this)" style="margin-top:8px;"></select>
       </div>
     </div>
 
-    <!-- STEP 3: INSURANCE -->
-    <div class="card">
-      <div class="step-head">
-        <div class="step-num">3</div>
-        <div><div class="step-title">Insurance</div><div class="step-sub">NCD &amp; premium</div></div>
+    <div class="live-group" id="liveGroupFinancing">
+      <div class="live-group-head" onclick="toggleLiveGroup('liveGroupFinancing')">
+        <div class="live-panel-label">Financing</div>
+        <div class="live-group-summary" id="liveSummaryFinancing"></div>
+        <button type="button" class="step-chevron" aria-label="Collapse">▾</button>
       </div>
-      <div class="field">
-        <label>NCD (No-Claim Discount)</label>
-        <select class="premium-select" id="ncd" onchange="onInput()">
+      <div class="live-group-body">
+        <div class="live-pill-row" id="paymentMethodRowLive" style="grid-template-columns:1fr 1fr;">
+          <button type="button" class="quick-pill active" data-method="loan" onclick="setPaymentMethod('loan')">Loan</button>
+          <button type="button" class="quick-pill" data-method="cash" onclick="setPaymentMethod('cash')">Cash Buyer</button>
+        </div>
+        <div id="financingInputsLive" style="margin-top:14px;">
+          <div class="live-subrow-label">Down payment</div>
+          <div class="live-pill-row" id="dpPillRow">
+            <button type="button" class="quick-pill" onclick="quickSetDP(0)" title="Full loan — no down payment">0%</button>
+            <button type="button" class="quick-pill" onclick="quickSetDP(10)">10%</button>
+            <button type="button" class="quick-pill" onclick="quickSetDP(20)">20%</button>
+            <button type="button" class="quick-pill" onclick="quickSetDP(30)">30%</button>
+            <button type="button" class="quick-pill" onclick="quickSetDP(40)">40%</button>
+            <button type="button" class="quick-pill" onclick="quickSetDP(50)">50%</button>
+          </div>
+          <div class="live-subrow-label" style="margin-top:14px;">Tenure (years)</div>
+          <div class="live-pill-row" id="tenurePillRow">
+            <button type="button" class="quick-pill" onclick="quickSetTenure(5)">5Y</button>
+            <button type="button" class="quick-pill" onclick="quickSetTenure(6)">6Y</button>
+            <button type="button" class="quick-pill" onclick="quickSetTenure(7)">7Y</button>
+            <button type="button" class="quick-pill" onclick="quickSetTenure(8)">8Y</button>
+            <button type="button" class="quick-pill" onclick="quickSetTenure(9)">9Y</button>
+          </div>
+          <div class="live-subrow-label" style="margin-top:14px;">Interest rate (p.a.)</div>
+          <input type="number" class="live-input" id="rateLive" step="0.05" min="0" value="2.50" oninput="liveSetRate(this)">
+        </div>
+      </div>
+    </div>
+
+    <div class="live-group" id="liveGroupInsurance">
+      <div class="live-group-head" onclick="toggleLiveGroup('liveGroupInsurance')">
+        <div class="live-panel-label">Insurance</div>
+        <div class="live-group-summary" id="liveSummaryInsurance"></div>
+        <button type="button" class="step-chevron" aria-label="Collapse">▾</button>
+      </div>
+      <div class="live-group-body">
+        <select class="live-input" id="ncdLive" onchange="liveSetNCD(this)">
           <option value="0">0.00%</option>
           <option value="0.25">25.00%</option>
           <option value="0.30">30.00%</option>
@@ -569,34 +705,166 @@
           <option value="own">OWN INSURANCE</option>
         </select>
       </div>
-      <div class="field">
-        <label>Net premium (estimated) <span class="val" id="netPremiumLabel">RM 0</span></label>
-        <div class="chip-note" id="ncdNote">after NCD, before add-ons</div>
+    </div>
+
+    <div class="live-group" id="liveGroupPromotion">
+      <div class="live-group-head" onclick="toggleLiveGroup('liveGroupPromotion')">
+        <div class="live-panel-label">Promotion</div>
+        <div class="live-group-summary" id="liveSummaryPromotion"></div>
+        <button type="button" class="step-chevron" aria-label="Collapse">▾</button>
+      </div>
+      <div class="live-group-body">
+        <div class="live-subrow-label">Monthly promotion</div>
+        <div class="live-pill-row" id="rebatePillRow" style="grid-template-columns:1fr 1fr;">
+          <button type="button" class="quick-pill" onclick="liveToggleRebate('none')">Off</button>
+          <button type="button" class="quick-pill" onclick="liveToggleRebate('full')">Apply</button>
+        </div>
+        <div class="live-subrow-label" style="margin-top:14px;">Dealer promotion (RM)</div>
+        <input type="number" class="live-input" id="extraRebateLive" step="100" min="0" value="0" oninput="liveSetExtraRebate(this)">
+      </div>
+    </div>
+
+    <div class="live-chip-row">
+      <div class="live-chip">
+        <span class="live-chip-icon">💰</span>
+        <div class="live-chip-label">Down payment</div>
+        <div class="live-chip-val" id="liveDpVal">RM 0 (10%)</div>
+      </div>
+      <div class="live-chip">
+        <span class="live-chip-icon">🛡️</span>
+        <div class="live-chip-label">Insurance (after NCD)</div>
+        <div class="live-chip-val" id="liveInsVal">RM 0</div>
+      </div>
+      <div class="live-chip">
+        <span class="live-chip-icon">%</span>
+        <div class="live-chip-label">Interest rate (p.a.)</div>
+        <div class="live-chip-val" id="liveRateVal">0%</div>
+      </div>
+      <div class="live-chip">
+        <span class="live-chip-icon">🎁</span>
+        <div class="live-chip-label">Total promotion</div>
+        <div class="live-chip-val" id="livePromoVal">RM 0</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= STEP CARDS ============================= -->
+  <section class="steps">
+
+    <!-- STEP 1: VEHICLE -->
+    <div class="card" id="cardVehicle">
+      <div class="step-head" onclick="toggleCard('cardVehicle')">
+        <div class="step-num">1</div>
+        <div><div class="step-title">Vehicle</div><div class="step-sub">Model &amp; variant</div></div>
+        <div class="step-summary" id="summaryVehicle"></div>
+        <button type="button" class="step-chevron" aria-label="Collapse">▾</button>
+      </div>
+      <div class="step-body">
+        <div class="field">
+          <label>Model</label>
+          <select class="premium-select" id="modelSelect"></select>
+        </div>
+        <div class="field">
+          <label>Variant</label>
+          <select class="premium-select" id="variantSelect"></select>
+        </div>
+        <div class="field">
+          <label>On-the-road price (editable)</label>
+          <input type="text" inputmode="numeric" class="num-input" id="otrOverride" value="0" oninput="formatOtrInput(this); onInput()">
+        </div>
+        <div class="step-caption" id="selectedTitle">Configure financing</div>
+      </div>
+    </div>
+
+    <!-- STEP 2: FINANCING -->
+    <div class="card" id="cardFinancing">
+      <div class="step-head" onclick="toggleCard('cardFinancing')">
+        <div class="step-num">2</div>
+        <div><div class="step-title">Financing</div><div class="step-sub">Down payment &amp; tenure</div></div>
+        <div class="step-summary" id="summaryFinancing"></div>
+        <button type="button" class="step-chevron" aria-label="Collapse">▾</button>
+      </div>
+      <div class="step-body">
+        <div class="field">
+          <label>Payment method</label>
+          <div class="method-toggle" id="paymentMethodRow">
+            <button type="button" class="method-btn active" data-method="loan" onclick="setPaymentMethod('loan')">Loan / Hire-Purchase</button>
+            <button type="button" class="method-btn" data-method="cash" onclick="setPaymentMethod('cash')">Cash Buyer</button>
+          </div>
+        </div>
+        <div id="financingInputs">
+          <div class="field slider-wrap">
+            <label>Down payment <span class="val" id="dpPctLabel">10%</span></label>
+            <input type="range" id="dpPct" min="0" max="50" value="10" step="1" oninput="onInput()">
+            <div class="chip-note" id="dpAmountNote">RM 0</div>
+          </div>
+          <div class="field slider-wrap">
+            <label>Tenure <span class="val" id="tenureLabel">7 years</span></label>
+            <input type="range" id="tenure" min="1" max="9" value="7" step="1" oninput="onInput()">
+            <div class="chip-note" id="tenureNote">84 months</div>
+          </div>
+          <div class="field">
+            <label>Flat interest rate (p.a.)</label>
+            <input type="number" class="num-input" id="rate" value="2.50" step="0.05" min="0" oninput="onInput()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: INSURANCE -->
+    <div class="card" id="cardInsurance">
+      <div class="step-head" onclick="toggleCard('cardInsurance')">
+        <div class="step-num">3</div>
+        <div><div class="step-title">Insurance</div><div class="step-sub">NCD &amp; premium</div></div>
+        <div class="step-summary" id="summaryInsurance"></div>
+        <button type="button" class="step-chevron" aria-label="Collapse">▾</button>
+      </div>
+      <div class="step-body">
+        <div class="field">
+          <label>NCD (No-Claim Discount)</label>
+          <select class="premium-select" id="ncd" onchange="onInput()">
+            <option value="0">0.00%</option>
+            <option value="0.25">25.00%</option>
+            <option value="0.30">30.00%</option>
+            <option value="0.3833">38.33%</option>
+            <option value="0.45">45.00%</option>
+            <option value="0.55">55.00%</option>
+            <option value="own">OWN INSURANCE</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Net premium (estimated) <span class="val" id="netPremiumLabel">RM 0</span></label>
+          <div class="chip-note" id="ncdNote">after NCD, before add-ons</div>
+        </div>
       </div>
     </div>
 
     <!-- STEP 4: PROMOTION -->
-    <div class="card">
-      <div class="step-head">
+    <div class="card" id="cardPromotion">
+      <div class="step-head" onclick="toggleCard('cardPromotion')">
         <div class="step-num">4</div>
         <div><div class="step-title">Promotion</div><div class="step-sub">Monthly &amp; dealer promotion</div></div>
+        <div class="step-summary" id="summaryPromotion"></div>
+        <button type="button" class="step-chevron" aria-label="Collapse">▾</button>
       </div>
-      <div class="field">
-        <label>Monthly Promotion</label>
-        <select class="premium-select" id="rebateSelect" onchange="onInput()">
-          <option value="none">No promotion</option>
-          <option value="full">Apply promotion</option>
-        </select>
-        <div class="chip-note" id="rebateSub">No rebate on this variant</div>
-      </div>
-      <div class="field">
-        <label>Dealer promotion (RM)</label>
-        <input type="number" class="num-input" id="extraRebate" value="0" step="100" min="0" oninput="onInput()">
-        <div class="chip-note" id="extraRebateNote">Keyed in manually</div>
-      </div>
-      <div class="field">
-        <label>Total promotion <span class="val" id="rebateAmtLabel">RM 0</span></label>
-        <div class="chip-note" id="totalPromoNote">Monthly promotion + additional promotion</div>
+      <div class="step-body">
+        <div class="field">
+          <label>Monthly Promotion</label>
+          <select class="premium-select" id="rebateSelect" onchange="onInput()">
+            <option value="none">No promotion</option>
+            <option value="full">Apply promotion</option>
+          </select>
+          <div class="chip-note" id="rebateSub">No rebate on this variant</div>
+        </div>
+        <div class="field">
+          <label>Dealer promotion (RM)</label>
+          <input type="number" class="num-input" id="extraRebate" value="0" step="100" min="0" oninput="onInput()">
+          <div class="chip-note" id="extraRebateNote">Keyed in manually</div>
+        </div>
+        <div class="field">
+          <label>Total promotion <span class="val" id="rebateAmtLabel">RM 0</span></label>
+          <div class="chip-note" id="totalPromoNote">Monthly promotion + additional promotion</div>
+        </div>
       </div>
     </div>
 
@@ -608,9 +876,11 @@
 
       <!-- MONTHLY HERO CARD -->
       <div class="monthly-card">
+        <div class="live-hearts" aria-hidden="true"><span>♥</span><span>♥</span><span>♥</span><span>♥</span></div>
         <div class="monthly-label">Monthly instalment (estimated) </div>
         <div class="monthly-value" id="statMonthly">RM 0</div>
         <div class="monthly-per"></div>
+        <div class="monthly-tenure-badge" id="monthlyTenureBadge">7 YEARS · 10% DOWN PAYMENT</div>
 
         <div class="gauge-wrap">
           <svg width="92" height="92" viewBox="0 0 150 150" style="flex-shrink:0;">
@@ -751,7 +1021,7 @@
 // ══════════════════════════════════════════════════════════════════
 // DATA LAYER — UNCHANGED FROM ORIGINAL, DO NOT ALTER CALCULATIONS
 // ══════════════════════════════════════════════════════════════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbw4DdeonXWLpXIZckylppk1KQ8y32oKBK6holOo24EtNZhRVrQnkFQKp9E2rQA2-_tiAA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyZzak0ezYpJSX3KIKcUwLRAmoxdXgCvc5YK1XwsLF9bXlb111-0tDwDksdrxlfXC5vyw/exec";
 
 let DATA = [];
 const FALLBACK_DATA = [{"VARIANT":"CITY S","MODEL":"CITY","SELLING PRICE":84560,"OTR W/O INSURANCE":84900,"SUM INSURED":84900,"BASIC PREMIUM":2908,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"CITY E","MODEL":"CITY","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"CITY V","MODEL":"CITY","SELLING PRICE":94560,"OTR W/O INSURANCE":94900,"SUM INSURED":94900,"BASIC PREMIUM":3168,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"CITY RS","MODEL":"CITY","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"CITY E:HEV RS","MODEL":"CITY","SELLING PRICE":111560,"OTR W/O INSURANCE":111900,"SUM INSURED":111900,"BASIC PREMIUM":3610,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"WR-V 1.5L S","MODEL":"WR-V","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA"},{"VARIANT":"WR-V 1.5L E","MODEL":"WR-V","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA"},{"VARIANT":"WR-V 1.5L V","MODEL":"WR-V","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA"},{"VARIANT":"WR-V 1.5L RS","MODEL":"WR-V","SELLING PRICE":107560,"OTR W/O INSURANCE":107900,"SUM INSURED":107900,"BASIC PREMIUM":3506,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA"},{"VARIANT":"CR-V 1.5L S","MODEL":"CR-V","SELLING PRICE":159530,"OTR W/O INSURANCE":159900,"SUM INSURED":159900,"BASIC PREMIUM":4408,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA"},{"VARIANT":"CR-V 2.0L E:HEV E","MODEL":"CR-V","SELLING PRICE":177362.8,"OTR W/O INSURANCE":178200,"SUM INSURED":178200,"BASIC PREMIUM":4902,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA"},{"VARIANT":"CR-V 1.5L V","MODEL":"CR-V","SELLING PRICE":181530,"OTR W/O INSURANCE":181900,"SUM INSURED":181900,"BASIC PREMIUM":4980,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA"},{"VARIANT":"CR-V 2.0L E:HEV RS","MODEL":"CR-V","SELLING PRICE":195062.8,"OTR W/O INSURANCE":195900,"SUM INSURED":195900,"BASIC PREMIUM":5344,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK S","MODEL":"CITY HATCHBACK","SELLING PRICE":85560,"OTR W/O INSURANCE":85900,"SUM INSURED":85900,"BASIC PREMIUM":2934,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK E","MODEL":"CITY HATCHBACK","SELLING PRICE":90560,"OTR W/O INSURANCE":90900,"SUM INSURED":90900,"BASIC PREMIUM":3064,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK V","MODEL":"CITY HATCHBACK","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK RS","MODEL":"CITY HATCHBACK","SELLING PRICE":100560,"OTR W/O INSURANCE":100900,"SUM INSURED":100900,"BASIC PREMIUM":3324,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK E:HEV RS","MODEL":"CITY HATCHBACK","SELLING PRICE":112560,"OTR W/O INSURANCE":112900,"SUM INSURED":112900,"BASIC PREMIUM":3636,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CIVIC 1.5L E","MODEL":"CIVIC","SELLING PRICE":133560,"OTR W/O INSURANCE":133900,"SUM INSURED":133900,"BASIC PREMIUM":4182,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA"},{"VARIANT":"CIVIC 1.5L V","MODEL":"CIVIC","SELLING PRICE":144560,"OTR W/O INSURANCE":144900,"SUM INSURED":144900,"BASIC PREMIUM":4468,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA"},{"VARIANT":"CIVIC 1.5L RS","MODEL":"CIVIC","SELLING PRICE":149560,"OTR W/O INSURANCE":149900,"SUM INSURED":149900,"BASIC PREMIUM":4598,"REBATE":12000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA"},{"VARIANT":"CIVIC 2.0L E:HEV RS","MODEL":"CIVIC","SELLING PRICE":167123.5,"OTR W/O INSURANCE":167900,"SUM INSURED":167900,"BASIC PREMIUM":5066,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5L S","MODEL":"HR-V","SELLING PRICE":115530,"OTR W/O INSURANCE":115900,"SUM INSURED":115900,"BASIC PREMIUM":3714,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5T E","MODEL":"HR-V","SELLING PRICE":130530,"OTR W/O INSURANCE":130900,"SUM INSURED":130900,"BASIC PREMIUM":4104,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5T V","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5L E:HEV RS","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":13000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"E:N1","MODEL":"E:N1","SELLING PRICE":149402,"OTR W/O INSURANCE":150010,"SUM INSURED":150000,"BASIC PREMIUM":4624,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1YdIZVYxr6qns1QgdYjJBnU9nBLQNBNnq","BRAND":"HONDA"},{"VARIANT":"PRELUDE","MODEL":"PRELUDE","SELLING PRICE":277173.5,"OTR W/O INSURANCE":277950,"SUM INSURED":278000,"BASIC PREMIUM":7952,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=12pyWxzalqK10BDjtbU-l5Ar0z-tszXFc","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5T V 360","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5L E:HEV RS 360","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"}];;
@@ -783,7 +1053,7 @@ async function loadData(){
   const badge = document.getElementById('srcBadge');
   const looksUnset = !GAS_URL || GAS_URL.indexOf("PASTE_YOUR") === 0;
   if(looksUnset){
-    DATA = FALLBACK_DATA;
+    DATA = FALLBACK_DATA.map(normalizeRow).filter(r => r.MODEL && r.OTR);
     badge.textContent = 'offline data';
     badge.className = 'src-badge offline';
     initVehicleList();
@@ -800,7 +1070,7 @@ async function loadData(){
     badge.className = 'src-badge live';
   }catch(err){
     console.warn('Falling back to cached pricing — live fetch failed:', err);
-    DATA = FALLBACK_DATA;
+    DATA = FALLBACK_DATA.map(normalizeRow).filter(r => r.MODEL && r.OTR);
     badge.textContent = 'offline (cached)';
     badge.className = 'src-badge offline';
   }
@@ -809,6 +1079,17 @@ async function loadData(){
 
 const currentBrand = "HONDA";
 let selected = null;
+let paymentMethod = 'loan'; // 'loan' | 'cash' — cash buyer skips down payment/tenure/interest entirely
+
+function setPaymentMethod(method){
+  paymentMethod = method;
+  document.querySelectorAll('#paymentMethodRow .method-btn, #paymentMethodRowLive .quick-pill').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.method === method);
+  });
+  document.getElementById('financingInputs').classList.toggle('cash-disabled', method === 'cash');
+  document.getElementById('financingInputsLive').classList.toggle('cash-disabled', method === 'cash');
+  onInput();
+}
 
 function fmt(n){
   return "RM " + Math.round(n).toLocaleString('en-MY');
@@ -831,6 +1112,7 @@ function renderModelList(){
     modelSelect.appendChild(opt);
   });
   modelSelect.onchange = () => renderVariantSelect(modelSelect.value);
+  document.getElementById('modelSelectLive').innerHTML = modelSelect.innerHTML;
   renderVariantSelect(models[0]);
 }
 
@@ -845,7 +1127,23 @@ function renderVariantSelect(model){
     variantSelect.appendChild(opt);
   });
   variantSelect.onchange = () => selectVariant(variants[parseInt(variantSelect.value)]);
+  document.getElementById('variantSelectLive').innerHTML = variantSelect.innerHTML;
+  document.getElementById('modelSelectLive').value = document.getElementById('modelSelect').value;
   selectVariant(variants[0]);
+}
+
+// ── live-mode: change car without leaving Live Mode — both selects mirror
+// the real ones and reuse their exact onchange logic, so there's no
+// separate vehicle-picking code path to keep in sync ──
+function liveSetModel(el){
+  const modelSelect = document.getElementById('modelSelect');
+  modelSelect.value = el.value;
+  modelSelect.onchange();
+}
+function liveSetVariant(el){
+  const variantSelect = document.getElementById('variantSelect');
+  variantSelect.value = el.value;
+  variantSelect.onchange();
 }
 
 function selectVariant(v){
@@ -871,6 +1169,9 @@ function selectVariant(v){
   rebateSelect.disabled = v.REBATE===0;
   rebateSelect.value = v.REBATE>0 ? rebateSelect.value : 'none';
   if(v.REBATE===0) rebateSelect.value = 'none';
+  // keep the live-panel selects (used while filming) pointed at the same vehicle
+  document.getElementById('modelSelectLive').value = document.getElementById('modelSelect').value;
+  document.getElementById('variantSelectLive').value = document.getElementById('variantSelect').value;
   // UI-only: hero image fade-in restart
   img.style.animation = 'none'; void img.offsetWidth; img.style.animation = '';
   onInput();
@@ -922,46 +1223,71 @@ function onInput(){
   // down payment % slider gives a target; amount financed is then rounded
   // DOWN to the nearest RM100, and down payment absorbs the rounding difference
   // so that: down payment = Total OTR − amount financed, always exactly.
-  const dpTarget = totalOTR * (dpPct/100);
-  const financedRaw = totalOTR - dpTarget;
-  const financed = Math.max(Math.floor(financedRaw/100)*100, 0);
+  // A cash buyer skips this branch entirely: financed is always 0, the full
+  // Total OTR is paid upfront, and there's no interest or monthly instalment.
+  const isCash = paymentMethod === 'cash';
+  const dpTarget = isCash ? totalOTR : totalOTR * (dpPct/100);
+  const financedRaw = isCash ? 0 : totalOTR - dpTarget;
+  const financed = isCash ? 0 : Math.max(Math.floor(financedRaw/100)*100, 0);
   const dpAmount = totalOTR - financed;
 
-  const totalInterest = financed * rate * tenureYears;
-  const totalRepay = financed + totalInterest;
-  const months = tenureYears * 12;
-  const monthly = totalRepay / months;
+  const totalInterest = isCash ? 0 : financed * rate * tenureYears;
+  const totalRepay = isCash ? totalOTR : financed + totalInterest;
+  const months = isCash ? 0 : tenureYears * 12;
+  const monthly = isCash ? 0 : totalRepay / months;
 
   // update labels
-  document.getElementById('dpPctLabel').textContent = dpPct + '%';
-  document.getElementById('tenureLabel').textContent = tenureYears + (tenureYears===1?' year':' years');
-  document.getElementById('tenureNote').textContent = months + ' months';
-  document.getElementById('dpAmountNote').textContent = fmt(dpAmount) + (rebateAmt>0 ? ` (after ${fmt(rebateAmt)} rebate)` : '');
+  document.getElementById('dpPctLabel').textContent = isCash ? '100%' : dpPct + '%';
+  document.getElementById('tenureLabel').textContent = isCash ? 'N/A' : tenureYears + (tenureYears===1?' year':' years');
+  document.getElementById('tenureNote').textContent = isCash ? 'cash purchase — no financing tenure' : months + ' months';
+  document.getElementById('dpAmountNote').textContent = isCash
+    ? 'Full amount paid at purchase'
+    : fmt(dpAmount) + (rebateAmt>0 ? ` (after ${fmt(rebateAmt)} rebate)` : '');
 
-  document.getElementById('statMonthly').textContent = fmt(monthly);
-  document.getElementById('statFinanced').textContent = fmt(financed);
-  document.getElementById('statInterest').textContent = fmt(totalInterest);
+  document.getElementById('statMonthly').textContent = isCash ? 'Cash purchase' : fmt(monthly);
+  document.getElementById('statFinanced').textContent = isCash ? 'n/a' : fmt(financed);
+  document.getElementById('statInterest').textContent = isCash ? 'n/a' : fmt(totalInterest);
   document.getElementById('statRepay').textContent = fmt(totalRepay);
   document.getElementById('statDP').textContent = fmt(dpAmount);
   document.getElementById('statOTR').textContent = fmt(Math.max(otr - rebateAmt, 0));
   document.getElementById('statPremium').textContent = ownInsurance ? 'own insurance' : fmt(netPremium);
   document.getElementById('statOTRPlusIns').textContent = fmt(totalOTR);
 
-  document.getElementById('gaugeValue').textContent = fmt(monthly);
+  document.getElementById('gaugeValue').textContent = isCash ? 'CASH' : fmt(monthly);
 
-  // gauge: scale relative to a soft max of RM 8000/month
+  // gauge: scale relative to a soft max of RM 8000/month; a cash purchase
+  // has no monthly figure to plot, so the ring just stays empty
   const maxGauge = 8000;
-  const frac = Math.min(monthly / maxGauge, 1);
+  const frac = isCash ? 0 : Math.min(monthly / maxGauge, 1);
   const circumference = 389.6;
   document.getElementById('gaugeArc').style.strokeDashoffset = circumference - (circumference * frac);
 
   // battery bar
-  const dpBarPct = Math.min(Math.max(dpPct,0),100);
+  const dpBarPct = isCash ? 100 : Math.min(Math.max(dpPct,0),100);
   document.getElementById('battFillDP').style.width = dpBarPct + '%';
-  document.getElementById('battPct').textContent = `${dpPct}% / ${100-dpPct}%`;
+  document.getElementById('battPct').textContent = isCash ? '100% / 0%' : `${dpPct}% / ${100-dpPct}%`;
 
   // ── UI-ONLY ADDITIONS BELOW — mirror already-computed values, no new math ──
-  updatePremiumUI({otr, rebateAmt, netPremium, ownInsurance, totalOTR, financed, rate, monthly});
+  updatePremiumUI({otr, rebateAmt, netPremium, ownInsurance, totalOTR, financed, rate, monthly, dpAmount, isCash});
+  updateStepSummaries({dpPct, dpAmount, tenureYears, rate, ncdVal, ownInsurance, netPremium, rebateAmt, isCash});
+}
+
+// ── collapsible step cards — folds a finished section down to just its
+// header + a one-line summary, so the page doesn't stay four full forms
+// tall the whole way through ──
+function toggleCard(cardId){
+  document.getElementById(cardId).classList.toggle('collapsed');
+}
+function updateStepSummaries({dpPct, dpAmount, tenureYears, rate, ncdVal, ownInsurance, netPremium, rebateAmt, isCash}){
+  document.getElementById('summaryVehicle').textContent =
+    selected ? `${selected.MODEL} — ${selected.VARIANT}` : '';
+  document.getElementById('summaryFinancing').textContent = isCash
+    ? 'Cash purchase — no financing'
+    : `${dpPct}% down (${fmt(dpAmount)}) · ${tenureYears}${tenureYears===1?' year':' years'} · ${rate*100}% p.a.`;
+  document.getElementById('summaryInsurance').textContent =
+    ownInsurance ? 'Own insurance' : `${(parseFloat(ncdVal)*100).toFixed(2)}% NCD · ${fmt(netPremium)}`;
+  document.getElementById('summaryPromotion').textContent =
+    rebateAmt > 0 ? `${fmt(rebateAmt)} applied` : 'No promotion';
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -970,11 +1296,13 @@ function onInput(){
 // Nothing here recomputes financing figures; it only reads the values
 // already produced by onInput() above.
 // ══════════════════════════════════════════════════════════════════
-function updatePremiumUI({otr, rebateAmt, netPremium, ownInsurance, totalOTR, financed, rate, monthly}){
+function updatePremiumUI({otr, rebateAmt, netPremium, ownInsurance, totalOTR, financed, rate, monthly, dpAmount, isCash}){
   // hero + sticky footer mirrors of the monthly instalment
-  const monthlyStr = fmt(monthly);
+  const monthlyStr = isCash ? 'Cash purchase' : fmt(monthly);
   document.getElementById('heroMonthly').textContent = monthlyStr + ' ';
   document.getElementById('footerMonthly').textContent = monthlyStr;
+  const heroSuffix = document.getElementById('heroMonthlySuffix');
+  if(heroSuffix) heroSuffix.textContent = isCash ? '— paid in full at purchase' : 'estimated monthly instalment*';
 
   // promotion badge in hero
   const promoBadge = document.getElementById('promoBadge');
@@ -995,6 +1323,82 @@ function updatePremiumUI({otr, rebateAmt, netPremium, ownInsurance, totalOTR, fi
   document.getElementById('insBarPct').textContent = ownInsurance ? 'n/a' : insPct.toFixed(1) + '%';
 
   renderTenureChart(financed, rate);
+  syncLivePanel({dpPct: parseFloat(document.getElementById('dpPct').value), dpAmount,
+    tenureYears: parseInt(document.getElementById('tenure').value), rate, netPremium, ownInsurance, rebateAmt, isCash});
+}
+
+// ── live-mode quick panel — sets the underlying inputs (so the exact same
+// math in onInput() runs) then mirrors the readouts + pill/control state ──
+function quickSetDP(pct){
+  document.getElementById('dpPct').value = pct;
+  onInput();
+}
+function quickSetTenure(years){
+  document.getElementById('tenure').value = years;
+  onInput();
+}
+function liveSetRate(el){
+  document.getElementById('rate').value = el.value;
+  onInput();
+}
+function liveSetNCD(el){
+  document.getElementById('ncd').value = el.value;
+  onInput();
+}
+function liveToggleRebate(val){
+  document.getElementById('rebateSelect').value = val;
+  onInput();
+}
+function liveSetExtraRebate(el){
+  document.getElementById('extraRebate').value = el.value;
+  onInput();
+}
+function syncLivePanel({dpPct, dpAmount, tenureYears, rate, netPremium, ownInsurance, rebateAmt, isCash}){
+  document.querySelectorAll('#dpPillRow .quick-pill').forEach(btn=>{
+    btn.classList.toggle('active', parseFloat(btn.textContent) === dpPct);
+  });
+  document.querySelectorAll('#tenurePillRow .quick-pill').forEach(btn=>{
+    btn.classList.toggle('active', parseInt(btn.textContent) === tenureYears);
+  });
+  document.getElementById('liveDpVal').textContent = isCash ? `${fmt(dpAmount)} (100%)` : `${fmt(dpAmount)} (${dpPct}%)`;
+  document.getElementById('liveInsVal').textContent = ownInsurance ? 'Own insurance' : fmt(netPremium);
+  document.getElementById('liveRateVal').textContent = isCash ? 'n/a' : (rate*100).toFixed(2) + '%';
+  document.getElementById('livePromoVal').textContent = fmt(rebateAmt);
+  const badge = document.getElementById('monthlyTenureBadge');
+  if(badge){ badge.textContent = isCash ? 'CASH PURCHASE' : `${tenureYears} YEARS · ${dpPct}% DOWN PAYMENT`; }
+
+  // mirror the hidden step-card controls into the live panel's own inputs,
+  // without fighting the one the user is actively typing into
+  const rateLive = document.getElementById('rateLive');
+  if(rateLive && document.activeElement !== rateLive) rateLive.value = (rate*100).toFixed(2);
+
+  const ncdLive = document.getElementById('ncdLive');
+  if(ncdLive) ncdLive.value = document.getElementById('ncd').value;
+
+  const extraRebateLive = document.getElementById('extraRebateLive');
+  if(extraRebateLive && document.activeElement !== extraRebateLive){
+    extraRebateLive.value = document.getElementById('extraRebate').value;
+  }
+
+  const rebateSelectVal = document.getElementById('rebateSelect').value;
+  document.querySelectorAll('#rebatePillRow .quick-pill').forEach((btn, i)=>{
+    btn.classList.toggle('active', (i===0 && rebateSelectVal==='none') || (i===1 && rebateSelectVal==='full'));
+  });
+
+  // group summaries (shown once a group is collapsed)
+  const ncdValNow = document.getElementById('ncd').value;
+  document.getElementById('liveSummaryVehicle').textContent =
+    selected ? `${selected.MODEL} — ${selected.VARIANT}` : '';
+  document.getElementById('liveSummaryFinancing').textContent = isCash
+    ? 'Cash purchase'
+    : `${dpPct}% down · ${tenureYears}Y · ${rate*100}%`;
+  document.getElementById('liveSummaryInsurance').textContent =
+    ownInsurance ? 'Own insurance' : `${(parseFloat(ncdValNow)*100).toFixed(2)}% NCD · ${fmt(netPremium)}`;
+  document.getElementById('liveSummaryPromotion').textContent =
+    rebateAmt > 0 ? `${fmt(rebateAmt)} applied` : 'No promotion';
+}
+function toggleLiveGroup(groupId){
+  document.getElementById(groupId).classList.toggle('collapsed');
 }
 
 // Reuses the exact same formula as onInput() (interest = financed × rate × years;
@@ -1115,18 +1519,22 @@ async function sendQuotation(){
 
   // payload only mirrors already-computed, already-displayed figures —
   // no new calculation happens here.
+  const ncdEl = document.getElementById('ncd');
   const payload = {
     action: 'sendQuotation',
     customerName: name,
     customerEmail: email,
     vehicle: `${selected.BRAND} ${selected.MODEL} — ${selected.VARIANT}`,
+    model: selected.MODEL,
+    variant: selected.VARIANT,
+    ncdPct: ncdEl.options[ncdEl.selectedIndex].text,
     totalOTR: document.getElementById('statOTRPlusIns').textContent,
     otrWoInsurance: document.getElementById('statOTR').textContent,
     netPremium: document.getElementById('statPremium').textContent,
     totalPromotion: document.getElementById('rebateAmtLabel').textContent,
     downPayment: document.getElementById('statDP').textContent,
     amountFinanced: document.getElementById('statFinanced').textContent,
-    interestRate: document.getElementById('rate').value + '%',
+    interestRate: paymentMethod === 'cash' ? 'n/a' : document.getElementById('rate').value + '%',
     tenure: document.getElementById('tenureLabel').textContent,
     totalInterest: document.getElementById('statInterest').textContent,
     totalRepayment: document.getElementById('statRepay').textContent,
@@ -1147,7 +1555,9 @@ async function sendQuotation(){
     });
     const data = await res.json();
     if(data && data.success){
-      statusEl.textContent = `Quotation sent to ${email}.`;
+      statusEl.textContent = data.quotationNumber
+        ? `Quotation ${data.quotationNumber} sent to ${email}.`
+        : `Quotation sent to ${email}.`;
       statusEl.className = 'modal-status ok';
       fireConfetti();
       setTimeout(closeQuotationModal, 1800);
