@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Global Amity — Financing Configurator</title>
-<link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=1XgvkyspWKeDu-RiBm0rnT2UiyHLfH03Z&sz=w256">
+<title>Honda — Financing Configurator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -199,6 +198,18 @@
   .method-btn.active{background:var(--accent);color:#fff;}
   #financingInputs.cash-disabled,
   #financingInputsLive.cash-disabled{opacity:.35;pointer-events:none;filter:grayscale(.4);}
+
+  /* insurance add-on checkbox list */
+  .addon-list{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line-strong);}
+  .addon-item{
+    display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--card);cursor:pointer;
+    font-size:13px;transition:background .15s ease;
+  }
+  .addon-item:hover{background:var(--card-hover);}
+  .addon-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer;}
+  .addon-item span:nth-child(2){flex:1;}
+  .addon-item .addon-price{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
+  .addon-list.addon-disabled{opacity:.4;pointer-events:none;}
 
   .premium-select, .num-input{
     width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);
@@ -552,7 +563,7 @@
     <!-- state: entry (default) -->
     <div id="gateStateEntry" style="display:none;">
       <div class="login-sub">Enter your work email to request access. New requests need admin approval before you can use this tool.</div>
-      <input type="email" class="login-input" id="loginEmailInput" placeholder="you@globalamity.com.my" autocomplete="off"
+      <input type="email" class="login-input" id="loginEmailInput" placeholder="you@company.com" autocomplete="off"
         onkeydown="if(event.key==='Enter') submitAccessRequest()">
       <div class="login-error" id="loginError"></div>
       <button class="login-btn" id="loginSubmitBtn" onclick="submitAccessRequest()">Request Access</button>
@@ -685,6 +696,11 @@
           </div>
           <div class="live-subrow-label" style="margin-top:14px;">Interest rate (p.a.)</div>
           <input type="number" class="live-input" id="rateLive" step="0.05" min="0" value="2.50" oninput="liveSetRate(this)">
+          <div class="live-subrow-label" style="margin-top:14px;">Interest method</div>
+          <div class="live-pill-row" id="interestMethodRowLive" style="grid-template-columns:1fr 1fr;">
+            <button type="button" class="quick-pill active" data-method="flat" onclick="setInterestMethod('flat')">Flat</button>
+            <button type="button" class="quick-pill" data-method="reducing" onclick="setInterestMethod('reducing')">Reducing Balance</button>
+          </div>
         </div>
       </div>
     </div>
@@ -770,6 +786,23 @@
           <select class="premium-select" id="variantSelect"></select>
         </div>
         <div class="field">
+          <label>Customer type</label>
+          <div class="method-toggle" id="customerTypeRow">
+            <button type="button" class="method-btn active" data-type="malaysian" onclick="setCustomerType('malaysian')">Malaysian</button>
+            <button type="button" class="method-btn" data-type="company" onclick="setCustomerType('company')">Company</button>
+            <button type="button" class="method-btn" data-type="foreigner" onclick="setCustomerType('foreigner')">Foreigner</button>
+          </div>
+          <div class="chip-note">Sets which roadtax / registration fee applies to the OTR below</div>
+        </div>
+        <div class="field">
+          <label>Colour</label>
+          <div class="method-toggle" id="colorTypeRow">
+            <button type="button" class="method-btn active" data-color="standard" onclick="setColorType('standard')">Standard</button>
+            <button type="button" class="method-btn" data-color="premium" onclick="setColorType('premium')">Premium</button>
+          </div>
+          <div class="chip-note">Premium adds the Premium Color Surcharge to the OTR below</div>
+        </div>
+        <div class="field">
           <label>On-the-road price (editable)</label>
           <input type="text" inputmode="numeric" class="num-input" id="otrOverride" value="0" oninput="formatOtrInput(this); onInput()">
         </div>
@@ -805,8 +838,16 @@
             <div class="chip-note" id="tenureNote">84 months</div>
           </div>
           <div class="field">
-            <label>Flat interest rate (p.a.)</label>
+            <label>Interest rate (p.a.)</label>
             <input type="number" class="num-input" id="rate" value="2.50" step="0.05" min="0" oninput="onInput()">
+          </div>
+          <div class="field">
+            <label>Interest calculation method</label>
+            <div class="method-toggle" id="interestMethodRow">
+              <button type="button" class="method-btn active" data-method="flat" onclick="setInterestMethod('flat')">Fixed Rate (Flat)</button>
+              <button type="button" class="method-btn" data-method="reducing" onclick="setInterestMethod('reducing')">Fixed Rate Reducing Balance</button>
+            </div>
+            <div class="chip-note" id="interestMethodNote">Interest charged once on the full amount financed, for the whole tenure.</div>
           </div>
         </div>
       </div>
@@ -837,6 +878,32 @@
           <label>Net premium (estimated) <span class="val" id="netPremiumLabel">RM 0</span></label>
           <div class="chip-note" id="ncdNote">after NCD, before add-ons</div>
         </div>
+        <div class="field">
+          <label>Insurance add-ons</label>
+          <div class="addon-list" id="addonList">
+            <label class="addon-item">
+              <input type="checkbox" id="addonWindscreen" onchange="onInput()">
+              <span>Windscreen Add-On</span>
+              <span class="addon-price" id="addonWindscreenPrice">RM 0</span>
+            </label>
+            <label class="addon-item">
+              <input type="checkbox" id="addonSpecialPerils" onchange="onInput()">
+              <span>Special Perils Add-On</span>
+              <span class="addon-price" id="addonSpecialPerilsPrice">RM 0</span>
+            </label>
+            <label class="addon-item">
+              <input type="checkbox" id="addonWorkshop" onchange="onInput()">
+              <span>Workshop Allowance Add-On</span>
+              <span class="addon-price" id="addonWorkshopPrice">RM 0</span>
+            </label>
+            <label class="addon-item">
+              <input type="checkbox" id="addonLlp" onchange="onInput()">
+              <span>LLP &amp; LLOP Add-On</span>
+              <span class="addon-price" id="addonLlpPrice">RM 0</span>
+            </label>
+          </div>
+          <div class="chip-note" id="addonsTotalNote">Total add-ons: RM 0</div>
+        </div>
       </div>
     </div>
 
@@ -865,6 +932,64 @@
         <div class="field">
           <label>Total promotion <span class="val" id="rebateAmtLabel">RM 0</span></label>
           <div class="chip-note" id="totalPromoNote">Monthly promotion + additional promotion</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5: CUSTOMER PARTICULARS -->
+    <div class="card" id="cardCustomer" style="grid-column:1/-1;">
+      <div class="step-head" onclick="toggleCard('cardCustomer')">
+        <div class="step-num">5</div>
+        <div><div class="step-title">Customer Particulars</div><div class="step-sub">For quotation &amp; HP application</div></div>
+        <div class="step-summary" id="summaryCustomer"></div>
+        <button type="button" class="step-chevron" aria-label="Collapse">▾</button>
+      </div>
+      <div class="step-body">
+        <div class="field-row">
+          <div class="field">
+            <label>Name</label>
+            <input type="text" class="num-input" id="custName" placeholder="Full name as per NRIC" style="font-family:'IBM Plex Sans',sans-serif;" oninput="onInput()">
+          </div>
+          <div class="field">
+            <label>NRIC No.</label>
+            <input type="text" class="num-input" id="custNric" placeholder="e.g. 901231-01-1234">
+          </div>
+        </div>
+        <div class="field">
+          <label>Address (Line 1)</label>
+          <input type="text" class="num-input" id="custAddr1" style="font-family:'IBM Plex Sans',sans-serif;">
+        </div>
+        <div class="field">
+          <label>Address (Line 2)</label>
+          <input type="text" class="num-input" id="custAddr2" style="font-family:'IBM Plex Sans',sans-serif;">
+        </div>
+        <div class="field">
+          <label>Address (Line 3)</label>
+          <input type="text" class="num-input" id="custAddr3" style="font-family:'IBM Plex Sans',sans-serif;">
+        </div>
+        <div class="field">
+          <label>Address (Line 4)</label>
+          <input type="text" class="num-input" id="custAddr4" placeholder="Postcode, city, state" style="font-family:'IBM Plex Sans',sans-serif;">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Contact (Home)</label>
+            <input type="tel" class="num-input" id="custContactHome">
+          </div>
+          <div class="field">
+            <label>Contact (Office)</label>
+            <input type="tel" class="num-input" id="custContactOffice">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Contact (H/P)</label>
+            <input type="tel" class="num-input" id="custContactHp" placeholder="012-3456789">
+          </div>
+          <div class="field">
+            <label>Contact (Email)</label>
+            <input type="email" class="num-input" id="custContactEmail" style="font-family:'IBM Plex Sans',sans-serif;">
+          </div>
         </div>
       </div>
     </div>
@@ -1026,10 +1151,10 @@
 // ══════════════════════════════════════════════════════════════════
 // DATA LAYER — UNCHANGED FROM ORIGINAL, DO NOT ALTER CALCULATIONS
 // ══════════════════════════════════════════════════════════════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyC0uwb6RsOMvq5NorR9fDmldQHKhMK6IilqFbZiwt9pCGvGM3_GskwuwZ4BD2n_oj5ng/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzIRo1xXfxDgJvNsZdyQMMnKlOQwA0hwkUUDSXKY3awxi65za_44lUOWnFzSIWfnNbTLw/exec";
 
 let DATA = [];
-const FALLBACK_DATA = [{"VARIANT":"CITY S","MODEL":"CITY","SELLING PRICE":84560,"OTR W/O INSURANCE":84900,"SUM INSURED":84900,"BASIC PREMIUM":2908,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"CITY E","MODEL":"CITY","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"CITY V","MODEL":"CITY","SELLING PRICE":94560,"OTR W/O INSURANCE":94900,"SUM INSURED":94900,"BASIC PREMIUM":3168,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"CITY RS","MODEL":"CITY","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"CITY E:HEV RS","MODEL":"CITY","SELLING PRICE":111560,"OTR W/O INSURANCE":111900,"SUM INSURED":111900,"BASIC PREMIUM":3610,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA"},{"VARIANT":"WR-V 1.5L S","MODEL":"WR-V","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA"},{"VARIANT":"WR-V 1.5L E","MODEL":"WR-V","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA"},{"VARIANT":"WR-V 1.5L V","MODEL":"WR-V","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA"},{"VARIANT":"WR-V 1.5L RS","MODEL":"WR-V","SELLING PRICE":107560,"OTR W/O INSURANCE":107900,"SUM INSURED":107900,"BASIC PREMIUM":3506,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA"},{"VARIANT":"CR-V 1.5L S","MODEL":"CR-V","SELLING PRICE":159530,"OTR W/O INSURANCE":159900,"SUM INSURED":159900,"BASIC PREMIUM":4408,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA"},{"VARIANT":"CR-V 2.0L E:HEV E","MODEL":"CR-V","SELLING PRICE":177362.8,"OTR W/O INSURANCE":178200,"SUM INSURED":178200,"BASIC PREMIUM":4902,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA"},{"VARIANT":"CR-V 1.5L V","MODEL":"CR-V","SELLING PRICE":181530,"OTR W/O INSURANCE":181900,"SUM INSURED":181900,"BASIC PREMIUM":4980,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA"},{"VARIANT":"CR-V 2.0L E:HEV RS","MODEL":"CR-V","SELLING PRICE":195062.8,"OTR W/O INSURANCE":195900,"SUM INSURED":195900,"BASIC PREMIUM":5344,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK S","MODEL":"CITY HATCHBACK","SELLING PRICE":85560,"OTR W/O INSURANCE":85900,"SUM INSURED":85900,"BASIC PREMIUM":2934,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK E","MODEL":"CITY HATCHBACK","SELLING PRICE":90560,"OTR W/O INSURANCE":90900,"SUM INSURED":90900,"BASIC PREMIUM":3064,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK V","MODEL":"CITY HATCHBACK","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK RS","MODEL":"CITY HATCHBACK","SELLING PRICE":100560,"OTR W/O INSURANCE":100900,"SUM INSURED":100900,"BASIC PREMIUM":3324,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CITY HATCHBACK E:HEV RS","MODEL":"CITY HATCHBACK","SELLING PRICE":112560,"OTR W/O INSURANCE":112900,"SUM INSURED":112900,"BASIC PREMIUM":3636,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA"},{"VARIANT":"CIVIC 1.5L E","MODEL":"CIVIC","SELLING PRICE":133560,"OTR W/O INSURANCE":133900,"SUM INSURED":133900,"BASIC PREMIUM":4182,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA"},{"VARIANT":"CIVIC 1.5L V","MODEL":"CIVIC","SELLING PRICE":144560,"OTR W/O INSURANCE":144900,"SUM INSURED":144900,"BASIC PREMIUM":4468,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA"},{"VARIANT":"CIVIC 1.5L RS","MODEL":"CIVIC","SELLING PRICE":149560,"OTR W/O INSURANCE":149900,"SUM INSURED":149900,"BASIC PREMIUM":4598,"REBATE":12000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA"},{"VARIANT":"CIVIC 2.0L E:HEV RS","MODEL":"CIVIC","SELLING PRICE":167123.5,"OTR W/O INSURANCE":167900,"SUM INSURED":167900,"BASIC PREMIUM":5066,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5L S","MODEL":"HR-V","SELLING PRICE":115530,"OTR W/O INSURANCE":115900,"SUM INSURED":115900,"BASIC PREMIUM":3714,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5T E","MODEL":"HR-V","SELLING PRICE":130530,"OTR W/O INSURANCE":130900,"SUM INSURED":130900,"BASIC PREMIUM":4104,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5T V","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5L E:HEV RS","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":13000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"E:N1","MODEL":"E:N1","SELLING PRICE":149402,"OTR W/O INSURANCE":150010,"SUM INSURED":150000,"BASIC PREMIUM":4624,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1YdIZVYxr6qns1QgdYjJBnU9nBLQNBNnq","BRAND":"HONDA"},{"VARIANT":"PRELUDE","MODEL":"PRELUDE","SELLING PRICE":277173.5,"OTR W/O INSURANCE":277950,"SUM INSURED":278000,"BASIC PREMIUM":7952,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=12pyWxzalqK10BDjtbU-l5Ar0z-tszXFc","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5T V 360","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"},{"VARIANT":"HR-V 1.5L E:HEV RS 360","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA"}];;
+const FALLBACK_DATA = [{"VARIANT":"CITY S","MODEL":"CITY","SELLING PRICE":84560,"OTR W/O INSURANCE":84900,"SUM INSURED":84900,"BASIC PREMIUM":2908,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY E","MODEL":"CITY","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY V","MODEL":"CITY","SELLING PRICE":94560,"OTR W/O INSURANCE":94900,"SUM INSURED":94900,"BASIC PREMIUM":3168,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY RS","MODEL":"CITY","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY E:HEV RS","MODEL":"CITY","SELLING PRICE":111560,"OTR W/O INSURANCE":111900,"SUM INSURED":111900,"BASIC PREMIUM":3610,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L S","MODEL":"WR-V","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L E","MODEL":"WR-V","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L V","MODEL":"WR-V","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L RS","MODEL":"WR-V","SELLING PRICE":107560,"OTR W/O INSURANCE":107900,"SUM INSURED":107900,"BASIC PREMIUM":3506,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CR-V 1.5L S","MODEL":"CR-V","SELLING PRICE":159530,"OTR W/O INSURANCE":159900,"SUM INSURED":159900,"BASIC PREMIUM":4408,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CR-V 2.0L E:HEV E","MODEL":"CR-V","SELLING PRICE":177362.8,"OTR W/O INSURANCE":178200,"SUM INSURED":178200,"BASIC PREMIUM":4902,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":437.2,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"CR-V 1.5L V","MODEL":"CR-V","SELLING PRICE":181530,"OTR W/O INSURANCE":181900,"SUM INSURED":181900,"BASIC PREMIUM":4980,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CR-V 2.0L E:HEV RS","MODEL":"CR-V","SELLING PRICE":195062.8,"OTR W/O INSURANCE":195900,"SUM INSURED":195900,"BASIC PREMIUM":5344,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":437.2,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK S","MODEL":"CITY HATCHBACK","SELLING PRICE":85560,"OTR W/O INSURANCE":85900,"SUM INSURED":85900,"BASIC PREMIUM":2934,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK E","MODEL":"CITY HATCHBACK","SELLING PRICE":90560,"OTR W/O INSURANCE":90900,"SUM INSURED":90900,"BASIC PREMIUM":3064,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK V","MODEL":"CITY HATCHBACK","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK RS","MODEL":"CITY HATCHBACK","SELLING PRICE":100560,"OTR W/O INSURANCE":100900,"SUM INSURED":100900,"BASIC PREMIUM":3324,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK E:HEV RS","MODEL":"CITY HATCHBACK","SELLING PRICE":112560,"OTR W/O INSURANCE":112900,"SUM INSURED":112900,"BASIC PREMIUM":3636,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 1.5L E","MODEL":"CIVIC","SELLING PRICE":133560,"OTR W/O INSURANCE":133900,"SUM INSURED":133900,"BASIC PREMIUM":4182,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 1.5L V","MODEL":"CIVIC","SELLING PRICE":144560,"OTR W/O INSURANCE":144900,"SUM INSURED":144900,"BASIC PREMIUM":4468,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 1.5L RS","MODEL":"CIVIC","SELLING PRICE":149560,"OTR W/O INSURANCE":149900,"SUM INSURED":149900,"BASIC PREMIUM":4598,"REBATE":12000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 2.0L E:HEV RS","MODEL":"CIVIC","SELLING PRICE":167123.5,"OTR W/O INSURANCE":167900,"SUM INSURED":167900,"BASIC PREMIUM":5066,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":376.5,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5L S","MODEL":"HR-V","SELLING PRICE":115530,"OTR W/O INSURANCE":115900,"SUM INSURED":115900,"BASIC PREMIUM":3714,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5T E","MODEL":"HR-V","SELLING PRICE":130530,"OTR W/O INSURANCE":130900,"SUM INSURED":130900,"BASIC PREMIUM":4104,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5T V","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5L E:HEV RS","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":13000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"E:N1","MODEL":"E:N1","SELLING PRICE":149402,"OTR W/O INSURANCE":150010,"SUM INSURED":150000,"BASIC PREMIUM":4624,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1YdIZVYxr6qns1QgdYjJBnU9nBLQNBNnq","BRAND":"HONDA","PLATE NUMBER":98,"ROADTAX":160,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"PRELUDE","MODEL":"PRELUDE","SELLING PRICE":277173.5,"OTR W/O INSURANCE":277950,"SUM INSURED":278000,"BASIC PREMIUM":7952,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=12pyWxzalqK10BDjtbU-l5Ar0z-tszXFc","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":376.5,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5T V 360","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5L E:HEV RS 360","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50}];;
 
 function toDirectImageUrl(url){
   if(!url) return "";
@@ -1050,8 +1175,40 @@ function normalizeRow(r){
     BASIC_PREMIUM: Number(r["BASIC PREMIUM"] || r.BASIC_PREMIUM || 0),
     REBATE: Number(r.REBATE || 0),
     IMAGE_URL: toDirectImageUrl(rawImage),
-    BRAND: "HONDA"
+    BRAND: "HONDA",
+    // registration/roadtax components — same OTR formula as before
+    // (Selling Price + Plate + Roadtax + Registration Fee + Ownership),
+    // just with a Company/Foreigner variant of roadtax/registration fee
+    // pulled from separate columns instead of always the individual rate
+    PLATE_NUMBER: Number(r["PLATE NUMBER"] || 0),
+    OWNERSHIP: Number(r.OWNERSHIP || 0),
+    ROADTAX: Number(r.ROADTAX || 0),
+    ROADTAX_COMPANY: Number(r["ROADTAX - COMPANY"] || 0),
+    REGISTRATION_FEE: Number(r["REGISTRATION FEE"] || 0),
+    REGISTRATION_FEE_FOREIGNER: Number(r["REGISTRATION FEE - FOREIGNER"] || 0),
+    REGISTRATION_FEE_COMPANY: Number(r["REGISTRATION FEE - COMPANY"] || 0),
+    // optional insurance add-ons — 0 if the sheet doesn't have a price for
+    // this variant, in which case the checkbox just adds nothing
+    WINDSCREEN_ADDON: Number(r["Windscreen Add-On"] || 0),
+    SPECIAL_PERILS_ADDON: Number(r["Special Perils Add-On"] || 0),
+    WORKSHOP_ALLOWANCE_ADDON: Number(r["Workshop Allowance Add-On"] || 0),
+    LLP_LLOP_ADDON: Number(r["LLP & LLOP Add-On"] || 0),
+    PREMIUM_COLOR_SURCHARGE: Number(r["Premium Color Surcharge"] || 0)
   };
+}
+
+// Recomputes the OTR (w/o insurance) baseline for a given customer type and
+// colour choice — same components as the sheet's own OTR figure (Selling
+// Price + Plate + Roadtax + Registration Fee + Ownership), swapping in the
+// Company/Foreigner roadtax/registration fee where applicable, plus the
+// Premium Color Surcharge on top if a premium colour is chosen.
+function computeOtrBase(v, type, color){
+  const roadtax = type === 'company' ? v.ROADTAX_COMPANY : v.ROADTAX;
+  const regFee = type === 'foreigner' ? v.REGISTRATION_FEE_FOREIGNER
+    : type === 'company' ? v.REGISTRATION_FEE_COMPANY
+    : v.REGISTRATION_FEE;
+  const colorSurcharge = color === 'premium' ? v.PREMIUM_COLOR_SURCHARGE : 0;
+  return v["SELLING PRICE"] + v.PLATE_NUMBER + roadtax + regFee + v.OWNERSHIP + colorSurcharge;
 }
 
 async function loadData(){
@@ -1085,6 +1242,33 @@ async function loadData(){
 const currentBrand = "HONDA";
 let selected = null;
 let paymentMethod = 'loan'; // 'loan' | 'cash' — cash buyer skips down payment/tenure/interest entirely
+let interestMethod = 'flat'; // 'flat' | 'reducing' — how interest is charged on a loan
+let customerType = 'malaysian'; // 'malaysian' | 'company' | 'foreigner' — which roadtax/registration fee applies
+let colorType = 'standard'; // 'standard' | 'premium' — whether the Premium Color Surcharge applies
+
+function setCustomerType(type){
+  customerType = type;
+  document.querySelectorAll('#customerTypeRow .method-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.type === type);
+  });
+  if(selected){
+    const newOtr = computeOtrBase(selected, type, colorType);
+    document.getElementById('otrOverride').value = newOtr.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  onInput();
+}
+
+function setColorType(color){
+  colorType = color;
+  document.querySelectorAll('#colorTypeRow .method-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.color === color);
+  });
+  if(selected){
+    const newOtr = computeOtrBase(selected, customerType, color);
+    document.getElementById('otrOverride').value = newOtr.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  onInput();
+}
 
 function setPaymentMethod(method){
   paymentMethod = method;
@@ -1093,6 +1277,20 @@ function setPaymentMethod(method){
   });
   document.getElementById('financingInputs').classList.toggle('cash-disabled', method === 'cash');
   document.getElementById('financingInputsLive').classList.toggle('cash-disabled', method === 'cash');
+  onInput();
+}
+
+function setInterestMethod(method){
+  interestMethod = method;
+  document.querySelectorAll('#interestMethodRow .method-btn, #interestMethodRowLive .quick-pill').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.method === method);
+  });
+  const note = document.getElementById('interestMethodNote');
+  if(note){
+    note.textContent = method === 'reducing'
+      ? 'Interest is recalculated each month on the outstanding balance — the same quoted rate costs less in total than flat rate.'
+      : 'Interest charged once on the full amount financed, for the whole tenure.';
+  }
   onInput();
 }
 
@@ -1166,14 +1364,19 @@ function selectVariant(v){
     fallback.style.display = 'block';
   }
   document.getElementById('activePrice').innerHTML =
-    `<span>Total OTR (estimated)</span><span>${fmt(v.OTR)}</span>`;
+    `<span>Total OTR (estimated)</span><span>${fmt(computeOtrBase(v, customerType, colorType))}</span>`;
   document.getElementById('selectedTitle').textContent = `${v.BRAND} ${v.MODEL} — ${v.VARIANT}`;
-  document.getElementById('otrOverride').value = v.OTR.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  document.getElementById('otrOverride').value = computeOtrBase(v, customerType, colorType).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   document.getElementById('rebateSub').textContent = v.REBATE>0 ? `RM ${v.REBATE.toLocaleString('en-MY')} promotion available` : 'No promotion on this variant';
   const rebateSelect = document.getElementById('rebateSelect');
   rebateSelect.disabled = v.REBATE===0;
   rebateSelect.value = v.REBATE>0 ? rebateSelect.value : 'none';
   if(v.REBATE===0) rebateSelect.value = 'none';
+  // insurance add-on prices for this variant
+  document.getElementById('addonWindscreenPrice').textContent = fmt(v.WINDSCREEN_ADDON);
+  document.getElementById('addonSpecialPerilsPrice').textContent = fmt(v.SPECIAL_PERILS_ADDON);
+  document.getElementById('addonWorkshopPrice').textContent = fmt(v.WORKSHOP_ALLOWANCE_ADDON);
+  document.getElementById('addonLlpPrice').textContent = fmt(v.LLP_LLOP_ADDON);
   // keep the live-panel selects (used while filming) pointed at the same vehicle
   document.getElementById('modelSelectLive').value = document.getElementById('modelSelect').value;
   document.getElementById('variantSelectLive').value = document.getElementById('variantSelect').value;
@@ -1205,7 +1408,27 @@ function onInput(){
 
   // net premium after NCD (0 if the customer arranges their own insurance)
   const ncdPct = ownInsurance ? 0 : parseFloat(ncdVal);
-  const netPremium = ownInsurance ? 0 : selected.BASIC_PREMIUM * (1 - ncdPct);
+  const basicAfterNcd = ownInsurance ? 0 : selected.BASIC_PREMIUM * (1 - ncdPct);
+
+  // insurance add-ons are charged at full price regardless of NCD (standard
+  // practice — NCD applies to the basic premium only), and don't apply at
+  // all if the customer is arranging their own insurance cover
+  const addonList = document.getElementById('addonList');
+  addonList.classList.toggle('addon-disabled', ownInsurance);
+  if(ownInsurance){
+    document.getElementById('addonWindscreen').checked = false;
+    document.getElementById('addonSpecialPerils').checked = false;
+    document.getElementById('addonWorkshop').checked = false;
+    document.getElementById('addonLlp').checked = false;
+  }
+  const addOnsTotal = ownInsurance ? 0 :
+    (document.getElementById('addonWindscreen').checked ? selected.WINDSCREEN_ADDON : 0) +
+    (document.getElementById('addonSpecialPerils').checked ? selected.SPECIAL_PERILS_ADDON : 0) +
+    (document.getElementById('addonWorkshop').checked ? selected.WORKSHOP_ALLOWANCE_ADDON : 0) +
+    (document.getElementById('addonLlp').checked ? selected.LLP_LLOP_ADDON : 0);
+  document.getElementById('addonsTotalNote').textContent = `Total add-ons: ${fmt(addOnsTotal)}`;
+
+  const netPremium = basicAfterNcd + addOnsTotal;
 
   document.getElementById('netPremiumLabel').textContent = ownInsurance ? 'n/a' : fmt(netPremium);
   document.getElementById('ncdNote').textContent = ownInsurance
@@ -1231,15 +1454,39 @@ function onInput(){
   // A cash buyer skips this branch entirely: financed is always 0, the full
   // Total OTR is paid upfront, and there's no interest or monthly instalment.
   const isCash = paymentMethod === 'cash';
+  const isReducing = interestMethod === 'reducing';
   const dpTarget = isCash ? totalOTR : totalOTR * (dpPct/100);
   const financedRaw = isCash ? 0 : totalOTR - dpTarget;
   const financed = isCash ? 0 : Math.max(Math.floor(financedRaw/100)*100, 0);
   const dpAmount = totalOTR - financed;
-
-  const totalInterest = isCash ? 0 : financed * rate * tenureYears;
-  const totalRepay = isCash ? totalOTR : financed + totalInterest;
   const months = isCash ? 0 : tenureYears * 12;
-  const monthly = isCash ? 0 : totalRepay / months;
+
+  let totalInterest, totalRepay, monthly;
+  if(isCash){
+    totalInterest = 0;
+    totalRepay = totalOTR;
+    monthly = 0;
+  } else if(isReducing){
+    // Fixed Rate Reducing Balance: same quoted annual rate, but interest is
+    // recalculated each month on the outstanding balance (standard amortizing-
+    // loan formula) instead of being charged once on the full principal for
+    // the whole tenure. Same nominal rate, lower total interest cost.
+    const monthlyRate = rate / 12;
+    if(monthlyRate === 0){
+      monthly = financed / months;
+    } else {
+      const growth = Math.pow(1 + monthlyRate, months);
+      monthly = financed * monthlyRate * growth / (growth - 1);
+    }
+    totalRepay = monthly * months;
+    totalInterest = totalRepay - financed;
+  } else {
+    // Fixed Rate (flat): interest charged once on the full amount financed,
+    // for the whole tenure, then divided evenly across every month.
+    totalInterest = financed * rate * tenureYears;
+    totalRepay = financed + totalInterest;
+    monthly = totalRepay / months;
+  }
 
   // update labels
   document.getElementById('dpPctLabel').textContent = isCash ? '100%' : dpPct + '%';
@@ -1284,15 +1531,22 @@ function toggleCard(cardId){
   document.getElementById(cardId).classList.toggle('collapsed');
 }
 function updateStepSummaries({dpPct, dpAmount, tenureYears, rate, ncdVal, ownInsurance, netPremium, rebateAmt, isCash}){
+  const custTypeLabel = customerType === 'company' ? ' · Company' : customerType === 'foreigner' ? ' · Foreigner' : '';
+  const colorLabel = colorType === 'premium' ? ' · Premium colour' : '';
   document.getElementById('summaryVehicle').textContent =
-    selected ? `${selected.MODEL} — ${selected.VARIANT}` : '';
+    selected ? `${selected.MODEL} — ${selected.VARIANT}${custTypeLabel}${colorLabel}` : '';
   document.getElementById('summaryFinancing').textContent = isCash
     ? 'Cash purchase — no financing'
-    : `${dpPct}% down (${fmt(dpAmount)}) · ${tenureYears}${tenureYears===1?' year':' years'} · ${rate*100}% p.a.`;
+    : `${dpPct}% down (${fmt(dpAmount)}) · ${tenureYears}${tenureYears===1?' year':' years'} · ${rate*100}% p.a. (${interestMethod === 'reducing' ? 'Reducing Balance' : 'Flat'})`;
+  const addOnCount = ['addonWindscreen','addonSpecialPerils','addonWorkshop','addonLlp']
+    .filter(id => document.getElementById(id).checked).length;
+  const addOnSuffix = addOnCount > 0 ? ` +${addOnCount} add-on${addOnCount>1?'s':''}` : '';
   document.getElementById('summaryInsurance').textContent =
-    ownInsurance ? 'Own insurance' : `${(parseFloat(ncdVal)*100).toFixed(2)}% NCD · ${fmt(netPremium)}`;
+    ownInsurance ? 'Own insurance' : `${(parseFloat(ncdVal)*100).toFixed(2)}% NCD · ${fmt(netPremium)}${addOnSuffix}`;
   document.getElementById('summaryPromotion').textContent =
     rebateAmt > 0 ? `${fmt(rebateAmt)} applied` : 'No promotion';
+  const custNameVal = document.getElementById('custName').value.trim();
+  document.getElementById('summaryCustomer').textContent = custNameVal || 'Not filled in';
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1396,7 +1650,7 @@ function syncLivePanel({dpPct, dpAmount, tenureYears, rate, netPremium, ownInsur
     selected ? `${selected.MODEL} — ${selected.VARIANT}` : '';
   document.getElementById('liveSummaryFinancing').textContent = isCash
     ? 'Cash purchase'
-    : `${dpPct}% down · ${tenureYears}Y · ${rate*100}%`;
+    : `${dpPct}% down · ${tenureYears}Y · ${rate*100}% (${interestMethod === 'reducing' ? 'Reducing' : 'Flat'})`;
   document.getElementById('liveSummaryInsurance').textContent =
     ownInsurance ? 'Own insurance' : `${(parseFloat(ncdValNow)*100).toFixed(2)}% NCD · ${fmt(netPremium)}`;
   document.getElementById('liveSummaryPromotion').textContent =
@@ -1493,8 +1747,8 @@ function generateQuotation(){
   const preview = document.getElementById('quotePreview');
   preview.innerHTML = `<b>${selected.BRAND} ${selected.MODEL} — ${selected.VARIANT}</b>
     Total OTR: ${document.getElementById('statOTRPlusIns').textContent} · Monthly: ${document.getElementById('statMonthly').textContent} · Tenure: ${document.getElementById('tenureLabel').textContent}`;
-  document.getElementById('quoteCustomerName').value = '';
-  document.getElementById('quoteCustomerEmail').value = '';
+  document.getElementById('quoteCustomerName').value = document.getElementById('custName').value.trim();
+  document.getElementById('quoteCustomerEmail').value = document.getElementById('custContactEmail').value.trim();
   document.getElementById('quoteSaEmail').value = currentAccessEmail || '';
   const statusEl = document.getElementById('quoteStatus');
   statusEl.textContent = '';
@@ -1533,6 +1787,14 @@ async function sendQuotation(){
   // payload only mirrors already-computed, already-displayed figures —
   // no new calculation happens here.
   const ncdEl = document.getElementById('ncd');
+  const customerTypeLabel = customerType === 'company' ? 'Company' : customerType === 'foreigner' ? 'Foreigner' : 'Malaysian';
+  const colorLabel = colorType === 'premium' ? 'Premium' : 'Standard';
+  const addOnLabels = [
+    ['addonWindscreen', 'Windscreen'],
+    ['addonSpecialPerils', 'Special Perils'],
+    ['addonWorkshop', 'Workshop Allowance'],
+    ['addonLlp', 'LLP & LLOP']
+  ].filter(([id]) => document.getElementById(id).checked).map(([,label]) => label);
   const payload = {
     action: 'sendQuotation',
     customerName: name,
@@ -1541,7 +1803,10 @@ async function sendQuotation(){
     vehicle: `${selected.BRAND} ${selected.MODEL} — ${selected.VARIANT}`,
     model: selected.MODEL,
     variant: selected.VARIANT,
+    customerType: customerTypeLabel,
+    colorType: colorLabel,
     ncdPct: ncdEl.options[ncdEl.selectedIndex].text,
+    insuranceAddOns: addOnLabels.length ? addOnLabels.join(', ') : 'None',
     totalOTR: document.getElementById('statOTRPlusIns').textContent,
     otrWoInsurance: document.getElementById('statOTR').textContent,
     netPremium: document.getElementById('statPremium').textContent,
@@ -1549,10 +1814,21 @@ async function sendQuotation(){
     downPayment: document.getElementById('statDP').textContent,
     amountFinanced: document.getElementById('statFinanced').textContent,
     interestRate: paymentMethod === 'cash' ? 'n/a' : document.getElementById('rate').value + '%',
+    interestMethod: paymentMethod === 'cash' ? 'n/a' : (interestMethod === 'reducing' ? 'Fixed Rate Reducing Balance' : 'Fixed Rate (Flat)'),
     tenure: document.getElementById('tenureLabel').textContent,
     totalInterest: document.getElementById('statInterest').textContent,
     totalRepayment: document.getElementById('statRepay').textContent,
-    monthlyInstalment: document.getElementById('statMonthly').textContent
+    monthlyInstalment: document.getElementById('statMonthly').textContent,
+    customerNric: document.getElementById('custNric').value.trim(),
+    customerAddress: [
+      document.getElementById('custAddr1').value.trim(),
+      document.getElementById('custAddr2').value.trim(),
+      document.getElementById('custAddr3').value.trim(),
+      document.getElementById('custAddr4').value.trim()
+    ].filter(Boolean).join(', '),
+    contactHome: document.getElementById('custContactHome').value.trim(),
+    contactOffice: document.getElementById('custContactOffice').value.trim(),
+    contactHp: document.getElementById('custContactHp').value.trim()
   };
 
   btn.disabled = true;
@@ -1589,12 +1865,56 @@ async function sendQuotation(){
 }
 function shareWhatsApp(){
   const name = selected ? `${selected.BRAND} ${selected.VARIANT}` : 'this vehicle';
-  const monthly = document.getElementById('statMonthly').textContent;
-  const dp = document.getElementById('statDP').textContent;
-  const tenure = document.getElementById('tenureLabel').textContent;
-  const totalOTR = document.getElementById('statOTRPlusIns').textContent;
-  const text = `Financing estimate for ${name}:\nTotal OTR: ${totalOTR}\nMonthly instalment: ${monthly}\nDown payment: ${dp}\nTenure: ${tenure}\n\n(Estimate only, subject to bank approval)`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  const isCash = paymentMethod === 'cash';
+  const ncdEl = document.getElementById('ncd');
+  const custName = document.getElementById('custName').value.trim();
+
+  const lines = [];
+  lines.push('*HONDA FINANCING CONFIGURATOR*');
+  lines.push('_GLOBAL AMITY SDN. BHD._');
+  lines.push('');
+  if(custName){ lines.push(`Prepared for: *${custName}*`); lines.push(''); }
+  lines.push(`*Vehicle:* ${name}`);
+  lines.push('');
+  lines.push('*— Pricing —*');
+  lines.push(`OTR (w/o insurance): ${document.getElementById('statOTR').textContent}`);
+  lines.push(`Total OTR (incl. insurance): *${document.getElementById('statOTRPlusIns').textContent}*`);
+  lines.push('');
+  lines.push('*— Insurance —*');
+  lines.push(`NCD: ${ncdEl.options[ncdEl.selectedIndex].text}`);
+  lines.push(`Net Premium: ${document.getElementById('statPremium').textContent}`);
+  const addOnLabels = [
+    ['addonWindscreen', 'Windscreen'],
+    ['addonSpecialPerils', 'Special Perils'],
+    ['addonWorkshop', 'Workshop Allowance'],
+    ['addonLlp', 'LLP & LLOP']
+  ].filter(([id]) => document.getElementById(id).checked).map(([,label]) => label);
+  lines.push(`Insurance Add-Ons: ${addOnLabels.length ? addOnLabels.join(', ') : 'None'}`);
+  lines.push('');
+  const totalPromo = document.getElementById('rebateAmtLabel').textContent;
+  lines.push('*— Promotion —*');
+  lines.push(`Total Promotion: ${totalPromo}`);
+  lines.push('');
+
+  if(isCash){
+    lines.push('*— Payment —*');
+    lines.push('Method: *Cash Purchase*');
+    lines.push(`Amount Payable: *${document.getElementById('statRepay').textContent}*`);
+  } else {
+    lines.push('*— Financing —*');
+    lines.push(`Down Payment: ${document.getElementById('statDP').textContent} (${document.getElementById('dpPctLabel').textContent})`);
+    lines.push(`Amount Financed: ${document.getElementById('statFinanced').textContent}`);
+    lines.push(`Interest Rate: ${document.getElementById('rate').value}% p.a. (${interestMethod === 'reducing' ? 'Reducing Balance' : 'Flat'})`);
+    lines.push(`Tenure: ${document.getElementById('tenureLabel').textContent}`);
+    lines.push('');
+    lines.push(`*Estimated Monthly Instalment: ${document.getElementById('statMonthly').textContent}*`);
+  }
+
+  lines.push('');
+  lines.push('_Estimate only, subject to bank/insurer approval. Figures may vary._');
+  if(currentAccessEmail){ lines.push(`Prepared by: ${currentAccessEmail}`); }
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`, '_blank');
 }
 function resetCalculator(){
   document.getElementById('dpPct').value = 10;
