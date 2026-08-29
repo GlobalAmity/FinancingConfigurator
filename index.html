@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Honda — Financing Configurator</title>
+<title>Honda Financing Configurator</title>
 <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=1XgvkyspWKeDu-RiBm0rnT2UiyHLfH03Z&sz=w256">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -564,7 +564,7 @@
     <!-- state: entry (default) -->
     <div id="gateStateEntry" style="display:none;">
       <div class="login-sub">Enter your work email to request access. New requests need admin approval before you can use this tool.</div>
-      <input type="email" class="login-input" id="loginEmailInput" placeholder="you@company.com" autocomplete="off"
+      <input type="email" class="login-input" id="loginEmailInput" placeholder="you@globalamity.com.my" autocomplete="off"
         onkeydown="if(event.key==='Enter') submitAccessRequest()">
       <div class="login-error" id="loginError"></div>
       <button class="login-btn" id="loginSubmitBtn" onclick="submitAccessRequest()">Request Access</button>
@@ -793,7 +793,6 @@
             <button type="button" class="method-btn" data-type="company" onclick="setCustomerType('company')">Company</button>
             <button type="button" class="method-btn" data-type="foreigner" onclick="setCustomerType('foreigner')">Foreigner</button>
           </div>
-          <div class="chip-note">Sets which roadtax / registration fee applies to the OTR below</div>
         </div>
         <div class="field">
           <label>Colour</label>
@@ -801,7 +800,6 @@
             <button type="button" class="method-btn active" data-color="standard" onclick="setColorType('standard')">Standard</button>
             <button type="button" class="method-btn" data-color="premium" onclick="setColorType('premium')">Premium</button>
           </div>
-          <div class="chip-note">Premium adds the Premium Color Surcharge to the OTR below</div>
         </div>
         <div class="field">
           <label>On-the-road price (editable)</label>
@@ -1170,7 +1168,7 @@
 // ══════════════════════════════════════════════════════════════════
 // DATA LAYER — UNCHANGED FROM ORIGINAL, DO NOT ALTER CALCULATIONS
 // ══════════════════════════════════════════════════════════════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxJqLb2vj5kygDy9f8MklkBU7bHj6AHUyGdnrMReFy8txTnAIcl2-t9h3MJ6JCNk9bOUQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbytlesDtXvGg2YyXj6XjnR-XgATqNJbRnsIeVv1sk4l046cgPUtCPCYgLjDX4Oi5l2n9A/exec";
 
 let DATA = [];
 const FALLBACK_DATA = [{"VARIANT":"CITY S","MODEL":"CITY","SELLING PRICE":84560,"OTR W/O INSURANCE":84900,"SUM INSURED":84900,"BASIC PREMIUM":2908,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY E","MODEL":"CITY","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY V","MODEL":"CITY","SELLING PRICE":94560,"OTR W/O INSURANCE":94900,"SUM INSURED":94900,"BASIC PREMIUM":3168,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY RS","MODEL":"CITY","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY E:HEV RS","MODEL":"CITY","SELLING PRICE":111560,"OTR W/O INSURANCE":111900,"SUM INSURED":111900,"BASIC PREMIUM":3610,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L S","MODEL":"WR-V","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L E","MODEL":"WR-V","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L V","MODEL":"WR-V","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L RS","MODEL":"WR-V","SELLING PRICE":107560,"OTR W/O INSURANCE":107900,"SUM INSURED":107900,"BASIC PREMIUM":3506,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CR-V 1.5L S","MODEL":"CR-V","SELLING PRICE":159530,"OTR W/O INSURANCE":159900,"SUM INSURED":159900,"BASIC PREMIUM":4408,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CR-V 2.0L E:HEV E","MODEL":"CR-V","SELLING PRICE":177362.8,"OTR W/O INSURANCE":178200,"SUM INSURED":178200,"BASIC PREMIUM":4902,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":437.2,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"CR-V 1.5L V","MODEL":"CR-V","SELLING PRICE":181530,"OTR W/O INSURANCE":181900,"SUM INSURED":181900,"BASIC PREMIUM":4980,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CR-V 2.0L E:HEV RS","MODEL":"CR-V","SELLING PRICE":195062.8,"OTR W/O INSURANCE":195900,"SUM INSURED":195900,"BASIC PREMIUM":5344,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":437.2,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK S","MODEL":"CITY HATCHBACK","SELLING PRICE":85560,"OTR W/O INSURANCE":85900,"SUM INSURED":85900,"BASIC PREMIUM":2934,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK E","MODEL":"CITY HATCHBACK","SELLING PRICE":90560,"OTR W/O INSURANCE":90900,"SUM INSURED":90900,"BASIC PREMIUM":3064,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK V","MODEL":"CITY HATCHBACK","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK RS","MODEL":"CITY HATCHBACK","SELLING PRICE":100560,"OTR W/O INSURANCE":100900,"SUM INSURED":100900,"BASIC PREMIUM":3324,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK E:HEV RS","MODEL":"CITY HATCHBACK","SELLING PRICE":112560,"OTR W/O INSURANCE":112900,"SUM INSURED":112900,"BASIC PREMIUM":3636,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 1.5L E","MODEL":"CIVIC","SELLING PRICE":133560,"OTR W/O INSURANCE":133900,"SUM INSURED":133900,"BASIC PREMIUM":4182,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 1.5L V","MODEL":"CIVIC","SELLING PRICE":144560,"OTR W/O INSURANCE":144900,"SUM INSURED":144900,"BASIC PREMIUM":4468,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 1.5L RS","MODEL":"CIVIC","SELLING PRICE":149560,"OTR W/O INSURANCE":149900,"SUM INSURED":149900,"BASIC PREMIUM":4598,"REBATE":12000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 2.0L E:HEV RS","MODEL":"CIVIC","SELLING PRICE":167123.5,"OTR W/O INSURANCE":167900,"SUM INSURED":167900,"BASIC PREMIUM":5066,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":376.5,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5L S","MODEL":"HR-V","SELLING PRICE":115530,"OTR W/O INSURANCE":115900,"SUM INSURED":115900,"BASIC PREMIUM":3714,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5T E","MODEL":"HR-V","SELLING PRICE":130530,"OTR W/O INSURANCE":130900,"SUM INSURED":130900,"BASIC PREMIUM":4104,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5T V","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5L E:HEV RS","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":13000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"E:N1","MODEL":"E:N1","SELLING PRICE":149402,"OTR W/O INSURANCE":150010,"SUM INSURED":150000,"BASIC PREMIUM":4624,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1YdIZVYxr6qns1QgdYjJBnU9nBLQNBNnq","BRAND":"HONDA","PLATE NUMBER":98,"ROADTAX":160,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"PRELUDE","MODEL":"PRELUDE","SELLING PRICE":277173.5,"OTR W/O INSURANCE":277950,"SUM INSURED":278000,"BASIC PREMIUM":7952,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=12pyWxzalqK10BDjtbU-l5Ar0z-tszXFc","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":376.5,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5T V 360","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5L E:HEV RS 360","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50}];;
@@ -1367,7 +1365,7 @@ function setInterestMethod(method){
   const note = document.getElementById('interestMethodNote');
   if(note){
     note.textContent = method === 'reducing'
-      ? 'Interest is recalculated each month on the outstanding balance — the same quoted rate costs less in total than flat rate.'
+      ? 'Interest is recalculated each month on the outstanding balance.'
       : 'Interest charged once on the full amount financed, for the whole tenure.';
   }
   onInput();
@@ -1430,7 +1428,7 @@ function liveSetVariant(el){
 
 function selectVariant(v){
   selected = v;
-  document.getElementById('activeName').textContent = `${v.BRAND} ${v.MODEL} — ${v.VARIANT}`;
+  document.getElementById('activeName').textContent = `${v.BRAND} ${v.VARIANT}`;
   const img = document.getElementById('activeImg');
   const fallback = document.getElementById('activeImgFallback');
   if(v.IMAGE_URL){
@@ -1444,7 +1442,7 @@ function selectVariant(v){
   }
   document.getElementById('activePrice').innerHTML =
     `<span>Total OTR (estimated)</span><span>${fmt(computeOtrBase(v, customerType, colorType))}</span>`;
-  document.getElementById('selectedTitle').textContent = `${v.BRAND} ${v.MODEL} — ${v.VARIANT}`;
+  document.getElementById('selectedTitle').textContent = `${v.BRAND} ${v.VARIANT}`;
   document.getElementById('otrOverride').value = computeOtrBase(v, customerType, colorType).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   document.getElementById('rebateSub').textContent = v.REBATE>0 ? `RM ${v.REBATE.toLocaleString('en-MY')} promotion available` : 'No promotion on this variant';
   const rebateSelect = document.getElementById('rebateSelect');
@@ -1634,7 +1632,7 @@ function updateStepSummaries({dpPct, dpAmount, tenureYears, rate, ncdVal, ownIns
   const custTypeLabel = customerType === 'company' ? ' · Company' : customerType === 'foreigner' ? ' · Foreigner' : '';
   const colorLabel = colorType === 'premium' ? ' · Premium colour' : '';
   document.getElementById('summaryVehicle').textContent =
-    selected ? `${selected.MODEL} — ${selected.VARIANT}${custTypeLabel}${colorLabel}` : '';
+    selected ? `${selected.VARIANT}${custTypeLabel}${colorLabel}` : '';
   document.getElementById('summaryFinancing').textContent = isCash
     ? 'Cash purchase — no financing'
     : `${dpPct}% down (${fmt(dpAmount)}) · ${tenureYears}${tenureYears===1?' year':' years'} · ${rate*100}% p.a. (${interestMethod === 'reducing' ? 'Reducing Balance' : 'Flat'})`;
@@ -1752,7 +1750,7 @@ function syncLivePanel({dpPct, dpAmount, tenureYears, rate, netPremium, ownInsur
   // group summaries (shown once a group is collapsed)
   const ncdValNow = document.getElementById('ncd').value;
   document.getElementById('liveSummaryVehicle').textContent =
-    selected ? `${selected.MODEL} — ${selected.VARIANT}` : '';
+    selected ? `${selected.VARIANT}` : '';
   document.getElementById('liveSummaryFinancing').textContent = isCash
     ? 'Cash purchase'
     : `${dpPct}% down · ${tenureYears}Y · ${rate*100}% (${interestMethod === 'reducing' ? 'Reducing' : 'Flat'})`;
@@ -1850,7 +1848,7 @@ function initLiveMode(){
 function generateQuotation(){
   if(!selected) return;
   const preview = document.getElementById('quotePreview');
-  preview.innerHTML = `<b>${selected.BRAND} ${selected.MODEL} — ${selected.VARIANT}</b>
+  preview.innerHTML = `<b>${selected.BRAND} ${selected.VARIANT}</b>
     Total OTR: ${document.getElementById('statOTRPlusIns').textContent} · Monthly: ${document.getElementById('statMonthly').textContent} · Tenure: ${document.getElementById('tenureLabel').textContent}`;
   document.getElementById('quoteCustomerName').value = document.getElementById('custName').value.trim();
   document.getElementById('quoteCustomerEmail').value = document.getElementById('custContactEmail').value.trim();
@@ -1908,7 +1906,7 @@ async function sendQuotation(){
     customerName: name,
     customerEmail: email,
     saEmail: saEmail,
-    vehicle: `${selected.BRAND} ${selected.MODEL} — ${selected.VARIANT}`,
+    vehicle: `${selected.BRAND} ${selected.VARIANT}`,
     model: selected.MODEL,
     variant: selected.VARIANT,
     customerType: customerTypeLabel,
