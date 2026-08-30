@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Honda Financing Configurator</title>
+<title>Honda — Financing Configurator</title>
 <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=1XgvkyspWKeDu-RiBm0rnT2UiyHLfH03Z&sz=w256">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -795,11 +795,10 @@
           </div>
         </div>
         <div class="field">
-          <label>Colour</label>
-          <div class="method-toggle" id="colorTypeRow">
-            <button type="button" class="method-btn active" data-color="standard" onclick="setColorType('standard')">Standard</button>
-            <button type="button" class="method-btn" data-color="premium" onclick="setColorType('premium')">Premium</button>
-          </div>
+          <label>Colour <span class="val" id="colourSurchargeNote"></span></label>
+          <select class="premium-select" id="colourSelect" onchange="setColourName(this.value)">
+            <option value="">Loading colours…</option>
+          </select>
         </div>
         <div class="field">
           <label>On-the-road price (editable)</label>
@@ -1114,6 +1113,7 @@
     <!-- ACTIONS -->
     <div class="actions">
       <button class="btn primary" onclick="generateQuotation()">Generate Quotation</button>
+      <button class="btn" onclick="openVsoModal()">Generate VSO</button>
       <button class="btn" onclick="shareWhatsApp()">Share WhatsApp</button>
       <button class="btn" id="btnPrint" onclick="window.print()">Print</button>
       <button class="btn" onclick="resetCalculator()">Reset</button>
@@ -1162,13 +1162,47 @@
     </div>
   </div>
 </div>
+
+<!-- VSO / BOOKING FORM MODAL -->
+<div class="modal-overlay" id="vsoModal" onclick="if(event.target===this) closeVsoModal()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-title">Generate VSO</div>
+      <button class="modal-close" onclick="closeVsoModal()">✕</button>
+    </div>
+    <div class="modal-sub">Emails a Customer's Booking Form PDF to the sales advisor for printing &amp; signature.</div>
+    <div class="modal-preview" id="vsoPreview"></div>
+    <div class="field">
+      <label>Customer name</label>
+      <input type="text" class="num-input" id="vsoCustomerName" placeholder="e.g. Ahmad bin Ismail" style="font-family:'IBM Plex Sans',sans-serif;">
+    </div>
+    <div class="field">
+      <label>Customer email</label>
+      <input type="email" class="num-input" id="vsoCustomerEmail" placeholder="customer@email.com" style="font-family:'IBM Plex Sans',sans-serif;">
+    </div>
+    <div class="field">
+      <label>Sales advisor email</label>
+      <input type="email" class="num-input" id="vsoSaEmail" placeholder="sa@yourdealer.com" style="font-family:'IBM Plex Sans',sans-serif;">
+    </div>
+    <div class="field">
+      <label>Booking fee (RM)</label>
+      <input type="number" class="num-input" id="vsoBookingFee" value="0" min="0" step="100">
+      <div class="chip-note">Keyed in by the SA — not sourced from any pricing data</div>
+    </div>
+    <div class="modal-status" id="vsoStatus"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeVsoModal()">Cancel</button>
+      <button class="btn primary" id="vsoSendBtn" onclick="sendVSO()">Generate VSO</button>
+    </div>
+  </div>
+</div>
 </div><!-- /#appContent -->
 
 <script>
 // ══════════════════════════════════════════════════════════════════
 // DATA LAYER — UNCHANGED FROM ORIGINAL, DO NOT ALTER CALCULATIONS
 // ══════════════════════════════════════════════════════════════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbytlesDtXvGg2YyXj6XjnR-XgATqNJbRnsIeVv1sk4l046cgPUtCPCYgLjDX4Oi5l2n9A/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyCbjRFa64ozdYNLf5-bg5WJ2sIJdVDyTaCRuurg-LwGq9uc2W8JiQ8CoqAsU1zZe4-9Q/exec";
 
 let DATA = [];
 const FALLBACK_DATA = [{"VARIANT":"CITY S","MODEL":"CITY","SELLING PRICE":84560,"OTR W/O INSURANCE":84900,"SUM INSURED":84900,"BASIC PREMIUM":2908,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY E","MODEL":"CITY","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY V","MODEL":"CITY","SELLING PRICE":94560,"OTR W/O INSURANCE":94900,"SUM INSURED":94900,"BASIC PREMIUM":3168,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY RS","MODEL":"CITY","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY E:HEV RS","MODEL":"CITY","SELLING PRICE":111560,"OTR W/O INSURANCE":111900,"SUM INSURED":111900,"BASIC PREMIUM":3610,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L S","MODEL":"WR-V","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L E","MODEL":"WR-V","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L V","MODEL":"WR-V","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L RS","MODEL":"WR-V","SELLING PRICE":107560,"OTR W/O INSURANCE":107900,"SUM INSURED":107900,"BASIC PREMIUM":3506,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CR-V 1.5L S","MODEL":"CR-V","SELLING PRICE":159530,"OTR W/O INSURANCE":159900,"SUM INSURED":159900,"BASIC PREMIUM":4408,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CR-V 2.0L E:HEV E","MODEL":"CR-V","SELLING PRICE":177362.8,"OTR W/O INSURANCE":178200,"SUM INSURED":178200,"BASIC PREMIUM":4902,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":437.2,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"CR-V 1.5L V","MODEL":"CR-V","SELLING PRICE":181530,"OTR W/O INSURANCE":181900,"SUM INSURED":181900,"BASIC PREMIUM":4980,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CR-V 2.0L E:HEV RS","MODEL":"CR-V","SELLING PRICE":195062.8,"OTR W/O INSURANCE":195900,"SUM INSURED":195900,"BASIC PREMIUM":5344,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":437.2,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK S","MODEL":"CITY HATCHBACK","SELLING PRICE":85560,"OTR W/O INSURANCE":85900,"SUM INSURED":85900,"BASIC PREMIUM":2934,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK E","MODEL":"CITY HATCHBACK","SELLING PRICE":90560,"OTR W/O INSURANCE":90900,"SUM INSURED":90900,"BASIC PREMIUM":3064,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK V","MODEL":"CITY HATCHBACK","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK RS","MODEL":"CITY HATCHBACK","SELLING PRICE":100560,"OTR W/O INSURANCE":100900,"SUM INSURED":100900,"BASIC PREMIUM":3324,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK E:HEV RS","MODEL":"CITY HATCHBACK","SELLING PRICE":112560,"OTR W/O INSURANCE":112900,"SUM INSURED":112900,"BASIC PREMIUM":3636,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 1.5L E","MODEL":"CIVIC","SELLING PRICE":133560,"OTR W/O INSURANCE":133900,"SUM INSURED":133900,"BASIC PREMIUM":4182,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 1.5L V","MODEL":"CIVIC","SELLING PRICE":144560,"OTR W/O INSURANCE":144900,"SUM INSURED":144900,"BASIC PREMIUM":4468,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 1.5L RS","MODEL":"CIVIC","SELLING PRICE":149560,"OTR W/O INSURANCE":149900,"SUM INSURED":149900,"BASIC PREMIUM":4598,"REBATE":12000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 2.0L E:HEV RS","MODEL":"CIVIC","SELLING PRICE":167123.5,"OTR W/O INSURANCE":167900,"SUM INSURED":167900,"BASIC PREMIUM":5066,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":376.5,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5L S","MODEL":"HR-V","SELLING PRICE":115530,"OTR W/O INSURANCE":115900,"SUM INSURED":115900,"BASIC PREMIUM":3714,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5T E","MODEL":"HR-V","SELLING PRICE":130530,"OTR W/O INSURANCE":130900,"SUM INSURED":130900,"BASIC PREMIUM":4104,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5T V","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5L E:HEV RS","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":13000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"E:N1","MODEL":"E:N1","SELLING PRICE":149402,"OTR W/O INSURANCE":150010,"SUM INSURED":150000,"BASIC PREMIUM":4624,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1YdIZVYxr6qns1QgdYjJBnU9nBLQNBNnq","BRAND":"HONDA","PLATE NUMBER":98,"ROADTAX":160,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"PRELUDE","MODEL":"PRELUDE","SELLING PRICE":277173.5,"OTR W/O INSURANCE":277950,"SUM INSURED":278000,"BASIC PREMIUM":7952,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=12pyWxzalqK10BDjtbU-l5Ar0z-tszXFc","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":376.5,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5T V 360","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5L E:HEV RS 360","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50}];;
@@ -1255,6 +1289,7 @@ async function loadData(){
   }
   initVehicleList();
   loadAccessories(); // independent of vehicle data — never blocks the main app
+  loadPremiumColours(); // ditto
 }
 
 // ── Accessories — fetched separately from the same GAS backend via
@@ -1315,6 +1350,76 @@ function renderAccessoriesList(model){
   onInput();
 }
 
+// ── Premium Colours — fetched via ?type=premiumColours. The sheet is a
+// matrix: one row per VARIANT, one column per colour name, cell is
+// "PREMIUM" or blank (blank = standard, no surcharge). Colour names
+// aren't hardcoded — whatever columns exist become the picker options. ──
+let PREMIUM_COLOURS = [];
+let selectedColourName = '';
+
+async function loadPremiumColours(){
+  const looksUnset = !GAS_URL || GAS_URL.indexOf("PASTE_YOUR") === 0;
+  if(looksUnset) return;
+  try{
+    const res = await fetch(GAS_URL + '?type=premiumColours', {method:'GET'});
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const rows = Array.isArray(json) ? json : (json.data || json.rows || []);
+    PREMIUM_COLOURS = rows.filter(r => (r.VARIANT || '').toString().trim());
+    if(selected) renderColourList(selected.VARIANT);
+  }catch(err){
+    console.warn('Premium colours fetch failed:', err);
+    const sel = document.getElementById('colourSelect');
+    if(sel){
+      sel.innerHTML = '<option value="">Colours unavailable right now</option>';
+    }
+  }
+}
+
+// Rebuilds the colour picker for whichever variant is currently selected —
+// this is per-VARIANT (not per-model), so it re-renders every time the
+// variant changes, unlike Accessories which only resets on model change.
+function renderColourList(variant){
+  const sel = document.getElementById('colourSelect');
+  const note = document.getElementById('colourSurchargeNote');
+  if(!sel) return;
+  const row = PREMIUM_COLOURS.find(r => (r.VARIANT || '').toString().trim().toUpperCase() === (variant || '').toUpperCase());
+  if(!row){
+    sel.innerHTML = '<option value="">No colours listed for this variant</option>';
+    selectedColourName = '';
+    if(note) note.textContent = '';
+    setColorType('standard');
+    return;
+  }
+  const colourNames = Object.keys(row).filter(k => k !== 'VARIANT' && k !== 'MODEL').sort((a,b) => a.localeCompare(b));
+  sel.innerHTML = colourNames.map(name => {
+    const isPremium = (row[name] || '').toString().trim().toUpperCase() === 'PREMIUM';
+    return `<option value="${name}" data-premium="${isPremium}">${name}${isPremium ? ' (Premium)' : ''}</option>`;
+  }).join('');
+  if(colourNames.length){
+    sel.selectedIndex = 0;
+    setColourName(colourNames[0]);
+  }
+}
+
+function setColourName(name){
+  selectedColourName = name;
+  const sel = document.getElementById('colourSelect');
+  const opt = [...sel.options].find(o => o.value === name);
+  const isPremium = opt && opt.dataset.premium === 'true';
+  const note = document.getElementById('colourSurchargeNote');
+  colorType = isPremium ? 'premium' : 'standard';
+  if(note){
+    note.textContent = isPremium && selected ? `+${fmt(selected.PREMIUM_COLOR_SURCHARGE)}` : '';
+  }
+  if(selected){
+    const newOtr = computeOtrBase(selected, customerType, colorType);
+    document.getElementById('otrOverride').value = newOtr.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  onInput();
+}
+
+
 const currentBrand = "HONDA";
 let selected = null;
 let lastCalc = {}; // raw numeric snapshot from the most recent onInput() — see bottom of that function
@@ -1335,11 +1440,11 @@ function setCustomerType(type){
   onInput();
 }
 
+// Internal fallback only now (the button toggle it used to drive was
+// replaced by the colour-name picker) — used when a variant has no row
+// in the Premium Colour sheet, so the OTR calc still has a sane default.
 function setColorType(color){
   colorType = color;
-  document.querySelectorAll('#colorTypeRow .method-btn').forEach(btn=>{
-    btn.classList.toggle('active', btn.dataset.color === color);
-  });
   if(selected){
     const newOtr = computeOtrBase(selected, customerType, color);
     document.getElementById('otrOverride').value = newOtr.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -1460,6 +1565,9 @@ function selectVariant(v){
     lastAccessoriesModel = v.MODEL;
     renderAccessoriesList(v.MODEL);
   }
+  // colour list IS per-variant — rebuild every time (also recomputes OTR
+  // for whichever colour ends up selected, via setColourName() inside)
+  renderColourList(v.VARIANT);
   // keep the live-panel selects (used while filming) pointed at the same vehicle
   document.getElementById('modelSelectLive').value = document.getElementById('modelSelect').value;
   document.getElementById('variantSelectLive').value = document.getElementById('variantSelect').value;
@@ -1630,7 +1738,7 @@ function toggleCard(cardId){
 }
 function updateStepSummaries({dpPct, dpAmount, tenureYears, rate, ncdVal, ownInsurance, netPremium, rebateAmt, isCash}){
   const custTypeLabel = customerType === 'company' ? ' · Company' : customerType === 'foreigner' ? ' · Foreigner' : '';
-  const colorLabel = colorType === 'premium' ? ' · Premium colour' : '';
+  const colorLabel = selectedColourName ? ` · ${selectedColourName}` : '';
   document.getElementById('summaryVehicle').textContent =
     selected ? `${selected.VARIANT}${custTypeLabel}${colorLabel}` : '';
   document.getElementById('summaryFinancing').textContent = isCash
@@ -1861,6 +1969,181 @@ function generateQuotation(){
 function closeQuotationModal(){
   document.getElementById('quoteModal').classList.remove('open');
 }
+
+function openVsoModal(){
+  if(!selected) return;
+  const preview = document.getElementById('vsoPreview');
+  preview.innerHTML = `<b>${selected.BRAND} ${selected.VARIANT}</b>
+    Total OTR: ${document.getElementById('statOTRPlusIns').textContent} · Monthly: ${document.getElementById('statMonthly').textContent} · Tenure: ${document.getElementById('tenureLabel').textContent}`;
+  document.getElementById('vsoCustomerName').value = document.getElementById('custName').value.trim();
+  document.getElementById('vsoCustomerEmail').value = document.getElementById('custContactEmail').value.trim();
+  document.getElementById('vsoSaEmail').value = currentAccessEmail || '';
+  document.getElementById('vsoBookingFee').value = 0;
+  const statusEl = document.getElementById('vsoStatus');
+  statusEl.textContent = '';
+  statusEl.className = 'modal-status';
+  document.getElementById('vsoModal').classList.add('open');
+}
+function closeVsoModal(){
+  document.getElementById('vsoModal').classList.remove('open');
+}
+async function sendVSO(){
+  if(!selected) return;
+  const name = document.getElementById('vsoCustomerName').value.trim();
+  const email = document.getElementById('vsoCustomerEmail').value.trim();
+  const saEmail = document.getElementById('vsoSaEmail').value.trim();
+  const bookingFee = Math.max(parseFloat(document.getElementById('vsoBookingFee').value) || 0, 0);
+  const statusEl = document.getElementById('vsoStatus');
+  const btn = document.getElementById('vsoSendBtn');
+
+  if(!name){
+    statusEl.textContent = 'Please enter the customer name.';
+    statusEl.className = 'modal-status err';
+    return;
+  }
+  const saEmailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(saEmail);
+  if(!saEmailOk){
+    statusEl.textContent = 'Please enter a valid sales advisor email address.';
+    statusEl.className = 'modal-status err';
+    return;
+  }
+
+  const payload = {
+    action: 'generateVSO',
+    customerName: name,
+    customerEmail: email,
+    saEmail: saEmail,
+    bookingFee: fmt(bookingFee),
+    bookingFeeValue: Math.round(bookingFee),
+    ...buildDealPayload()
+  };
+
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Generating…';
+  statusEl.textContent = '';
+  statusEl.className = 'modal-status';
+
+  try{
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(data && data.success){
+      statusEl.textContent = data.vsoNumber
+        ? `Booking form ${data.vsoNumber} sent to ${saEmail}.`
+        : `Booking form sent to ${saEmail}.`;
+      statusEl.className = 'modal-status ok';
+      fireConfetti();
+      setTimeout(closeVsoModal, 1800);
+    } else {
+      throw new Error((data && data.error) || 'Unknown error');
+    }
+  } catch(err){
+    console.warn('VSO generation failed:', err);
+    statusEl.textContent = 'Could not generate the VSO — please check your connection and try again.';
+    statusEl.className = 'modal-status err';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+}
+// Shared deal data — everything the vehicle/financing/insurance/promotion/
+// accessories/customer-particulars steps have produced. Used by both the
+// Quotation email and the VSO booking form, so there's one source of truth
+// instead of two payloads drifting apart.
+function buildDealPayload(){
+  const ncdEl = document.getElementById('ncd');
+  const customerTypeLabel = customerType === 'company' ? 'Company' : customerType === 'foreigner' ? 'Foreigner' : 'Malaysian';
+  const colorLabel = colorType === 'premium' ? 'Premium' : 'Standard';
+  const addOnLabels = [
+    ['addonWindscreen', 'Windscreen'],
+    ['addonSpecialPerils', 'Special Perils'],
+    ['addonWorkshop', 'Workshop Allowance'],
+    ['addonLlp', 'LLP & LLOP']
+  ].filter(([id]) => document.getElementById(id).checked).map(([,label]) => label);
+  const selectedAccessories = [...document.querySelectorAll('.accessory-checkbox:checked')]
+    .map(cb => cb.closest('.addon-item').querySelector('span').textContent);
+  const accessoriesTotalStr = document.getElementById('accessoriesTotalNote').textContent.replace('Total accessories: ', '');
+  const roadtax = customerType === 'company' ? selected.ROADTAX_COMPANY : selected.ROADTAX;
+  const registrationFee = customerType === 'foreigner' ? selected.REGISTRATION_FEE_FOREIGNER
+    : customerType === 'company' ? selected.REGISTRATION_FEE_COMPANY
+    : selected.REGISTRATION_FEE;
+  return {
+    vehicle: `${selected.BRAND} ${selected.VARIANT}`,
+    model: selected.MODEL,
+    variant: selected.VARIANT,
+    customerType: customerTypeLabel,
+    colorType: colorLabel,
+    colorName: selectedColourName || '-',
+    paymentMethod: paymentMethod === 'cash' ? 'Cash Purchase' : 'Loan / Hire-Purchase',
+    ncdPct: ncdEl.options[ncdEl.selectedIndex].text,
+    insuranceAddOns: addOnLabels.length ? addOnLabels.join(', ') : 'None',
+    accessories: selectedAccessories.length ? selectedAccessories.join(', ') : 'None',
+    accessoriesTotal: accessoriesTotalStr,
+    totalOTR: document.getElementById('statOTRPlusIns').textContent,
+    otrWoInsurance: document.getElementById('statOTR').textContent,
+    netPremium: document.getElementById('statPremium').textContent,
+    totalPromotion: document.getElementById('rebateAmtLabel').textContent,
+    downPayment: document.getElementById('statDP').textContent,
+    amountFinanced: document.getElementById('statFinanced').textContent,
+    interestRate: paymentMethod === 'cash' ? 'n/a' : document.getElementById('rate').value + '%',
+    interestMethod: paymentMethod === 'cash' ? 'n/a' : (interestMethod === 'reducing' ? 'Fixed Rate Reducing Balance' : 'Fixed Rate (Flat)'),
+    tenure: document.getElementById('tenureLabel').textContent,
+    totalInterest: document.getElementById('statInterest').textContent,
+    totalRepayment: document.getElementById('statRepay').textContent,
+    monthlyInstalment: document.getElementById('statMonthly').textContent,
+    customerNric: document.getElementById('custNric').value.trim(),
+    customerAddress: [
+      document.getElementById('custAddr1').value.trim(),
+      document.getElementById('custAddr2').value.trim(),
+      document.getElementById('custAddr3').value.trim(),
+      document.getElementById('custAddr4').value.trim()
+    ].filter(Boolean).join(', '),
+    // separate lines too — the VSO template has 3 distinct address rows,
+    // not one combined field, so it needs these individually
+    customerAddressLines: [
+      document.getElementById('custAddr1').value.trim(),
+      document.getElementById('custAddr2').value.trim(),
+      document.getElementById('custAddr3').value.trim(),
+      document.getElementById('custAddr4').value.trim()
+    ].filter(Boolean),
+    contactHome: document.getElementById('custContactHome').value.trim(),
+    contactOffice: document.getElementById('custContactOffice').value.trim(),
+    contactHp: document.getElementById('custContactHp').value.trim(),
+    // Price Structure breakdown — only the VSO booking form needs this level
+    // of itemization, but it's cheap to always include
+    sellingPrice: fmt(selected["SELLING PRICE"]),
+    plateNumber: fmt(selected.PLATE_NUMBER),
+    roadtax: fmt(roadtax),
+    registrationFee: fmt(registrationFee),
+    ownershipFee: fmt(selected.OWNERSHIP),
+    // raw numeric figures for the Quotations log sheet — kept separate from
+    // the "RM x,xxx" strings above (which the doc/email still use for
+    // display), so the sheet can do real math on these instead of parsing text
+    values: {
+      otr: Math.round(lastCalc.otr || 0),
+      totalOTR: Math.round(lastCalc.totalOTR || 0),
+      netPremium: Math.round(lastCalc.netPremium || 0),
+      insuranceAddOnsTotal: Math.round(lastCalc.addOnsTotal || 0),
+      accessoriesTotal: Math.round(lastCalc.accessoriesTotal || 0),
+      totalPromotion: Math.round(lastCalc.rebateAmt || 0),
+      downPayment: Math.round(lastCalc.dpAmount || 0),
+      downPaymentPct: lastCalc.dpPct || 0,
+      amountFinanced: Math.round(lastCalc.financed || 0),
+      interestRatePct: lastCalc.ratePct || 0,
+      tenureYears: lastCalc.tenureYears || 0,
+      tenureMonths: lastCalc.tenureMonths || 0,
+      totalInterest: Math.round(lastCalc.totalInterest || 0),
+      totalRepayment: Math.round(lastCalc.totalRepay || 0),
+      monthlyInstalment: Math.round((lastCalc.monthly || 0) * 100) / 100,
+      ncdPct: lastCalc.ncdPct || 0
+    }
+  };
+}
+
 async function sendQuotation(){
   if(!selected) return;
   const name = document.getElementById('quoteCustomerName').value.trim();
@@ -1887,78 +2170,12 @@ async function sendQuotation(){
     return;
   }
 
-  // payload only mirrors already-computed, already-displayed figures —
-  // no new calculation happens here.
-  const ncdEl = document.getElementById('ncd');
-  const customerTypeLabel = customerType === 'company' ? 'Company' : customerType === 'foreigner' ? 'Foreigner' : 'Malaysian';
-  const colorLabel = colorType === 'premium' ? 'Premium' : 'Standard';
-  const addOnLabels = [
-    ['addonWindscreen', 'Windscreen'],
-    ['addonSpecialPerils', 'Special Perils'],
-    ['addonWorkshop', 'Workshop Allowance'],
-    ['addonLlp', 'LLP & LLOP']
-  ].filter(([id]) => document.getElementById(id).checked).map(([,label]) => label);
-  const selectedAccessories = [...document.querySelectorAll('.accessory-checkbox:checked')]
-    .map(cb => cb.closest('.addon-item').querySelector('span').textContent);
-  const accessoriesTotalStr = document.getElementById('accessoriesTotalNote').textContent.replace('Total accessories: ', '');
   const payload = {
     action: 'sendQuotation',
     customerName: name,
     customerEmail: email,
     saEmail: saEmail,
-    vehicle: `${selected.BRAND} ${selected.VARIANT}`,
-    model: selected.MODEL,
-    variant: selected.VARIANT,
-    customerType: customerTypeLabel,
-    colorType: colorLabel,
-    paymentMethod: paymentMethod === 'cash' ? 'Cash Purchase' : 'Loan / Hire-Purchase',
-    ncdPct: ncdEl.options[ncdEl.selectedIndex].text,
-    insuranceAddOns: addOnLabels.length ? addOnLabels.join(', ') : 'None',
-    accessories: selectedAccessories.length ? selectedAccessories.join(', ') : 'None',
-    accessoriesTotal: accessoriesTotalStr,
-    totalOTR: document.getElementById('statOTRPlusIns').textContent,
-    otrWoInsurance: document.getElementById('statOTR').textContent,
-    netPremium: document.getElementById('statPremium').textContent,
-    totalPromotion: document.getElementById('rebateAmtLabel').textContent,
-    downPayment: document.getElementById('statDP').textContent,
-    amountFinanced: document.getElementById('statFinanced').textContent,
-    interestRate: paymentMethod === 'cash' ? 'n/a' : document.getElementById('rate').value + '%',
-    interestMethod: paymentMethod === 'cash' ? 'n/a' : (interestMethod === 'reducing' ? 'Fixed Rate Reducing Balance' : 'Fixed Rate (Flat)'),
-    tenure: document.getElementById('tenureLabel').textContent,
-    totalInterest: document.getElementById('statInterest').textContent,
-    totalRepayment: document.getElementById('statRepay').textContent,
-    monthlyInstalment: document.getElementById('statMonthly').textContent,
-    customerNric: document.getElementById('custNric').value.trim(),
-    customerAddress: [
-      document.getElementById('custAddr1').value.trim(),
-      document.getElementById('custAddr2').value.trim(),
-      document.getElementById('custAddr3').value.trim(),
-      document.getElementById('custAddr4').value.trim()
-    ].filter(Boolean).join(', '),
-    contactHome: document.getElementById('custContactHome').value.trim(),
-    contactOffice: document.getElementById('custContactOffice').value.trim(),
-    contactHp: document.getElementById('custContactHp').value.trim(),
-    // raw numeric figures for the Quotations log sheet — kept separate from
-    // the "RM x,xxx" strings above (which the doc/email still use for
-    // display), so the sheet can do real math on these instead of parsing text
-    values: {
-      otr: Math.round(lastCalc.otr || 0),
-      totalOTR: Math.round(lastCalc.totalOTR || 0),
-      netPremium: Math.round(lastCalc.netPremium || 0),
-      insuranceAddOnsTotal: Math.round(lastCalc.addOnsTotal || 0),
-      accessoriesTotal: Math.round(lastCalc.accessoriesTotal || 0),
-      totalPromotion: Math.round(lastCalc.rebateAmt || 0),
-      downPayment: Math.round(lastCalc.dpAmount || 0),
-      downPaymentPct: lastCalc.dpPct || 0,
-      amountFinanced: Math.round(lastCalc.financed || 0),
-      interestRatePct: lastCalc.ratePct || 0,
-      tenureYears: lastCalc.tenureYears || 0,
-      tenureMonths: lastCalc.tenureMonths || 0,
-      totalInterest: Math.round(lastCalc.totalInterest || 0),
-      totalRepayment: Math.round(lastCalc.totalRepay || 0),
-      monthlyInstalment: Math.round((lastCalc.monthly || 0) * 100) / 100,
-      ncdPct: lastCalc.ncdPct || 0
-    }
+    ...buildDealPayload()
   };
 
   btn.disabled = true;
