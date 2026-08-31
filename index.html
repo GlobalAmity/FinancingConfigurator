@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Honda — Financing Configurator</title>
+<title>Honda Financing Configurator</title>
 <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=1XgvkyspWKeDu-RiBm0rnT2UiyHLfH03Z&sz=w256">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1114,6 +1114,7 @@
     <div class="actions">
       <button class="btn primary" onclick="generateQuotation()">Generate Quotation</button>
       <button class="btn" onclick="openVsoModal()">Generate VSO</button>
+      <button class="btn" onclick="openStockModal()">View Stock</button>
       <button class="btn" onclick="shareWhatsApp()">Share WhatsApp</button>
       <button class="btn" id="btnPrint" onclick="window.print()">Print</button>
       <button class="btn" onclick="resetCalculator()">Reset</button>
@@ -1196,13 +1197,31 @@
     </div>
   </div>
 </div>
+
+<!-- STOCK AVAILABILITY MODAL -->
+<div class="modal-overlay" id="stockModal" onclick="if(event.target===this) closeStockModal()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-title">Stock Availability</div>
+      <button class="modal-close" onclick="closeStockModal()">✕</button>
+    </div>
+    <div class="modal-sub">Live count of units currently in stock, by model &amp; variant. Refreshed every time this opens.</div>
+    <div id="stockSummary" style="max-height:420px;overflow-y:auto;">
+      <div class="addon-item" style="cursor:default;color:var(--muted-2);font-family:'IBM Plex Mono',monospace;font-size:12px;">Loading stock…</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="openStockModal()">Refresh</button>
+      <button class="btn primary" onclick="closeStockModal()">Close</button>
+    </div>
+  </div>
+</div>
 </div><!-- /#appContent -->
 
 <script>
 // ══════════════════════════════════════════════════════════════════
 // DATA LAYER — UNCHANGED FROM ORIGINAL, DO NOT ALTER CALCULATIONS
 // ══════════════════════════════════════════════════════════════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyCbjRFa64ozdYNLf5-bg5WJ2sIJdVDyTaCRuurg-LwGq9uc2W8JiQ8CoqAsU1zZe4-9Q/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycby_jbmRu82Dr5U_hom2gUKAizr5sVS7tjAPABrvscSzg8SY7Ilf7qPPCuWXTRiD_v4IZQ/exec";
 
 let DATA = [];
 const FALLBACK_DATA = [{"VARIANT":"CITY S","MODEL":"CITY","SELLING PRICE":84560,"OTR W/O INSURANCE":84900,"SUM INSURED":84900,"BASIC PREMIUM":2908,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY E","MODEL":"CITY","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY V","MODEL":"CITY","SELLING PRICE":94560,"OTR W/O INSURANCE":94900,"SUM INSURED":94900,"BASIC PREMIUM":3168,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY RS","MODEL":"CITY","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY E:HEV RS","MODEL":"CITY","SELLING PRICE":111560,"OTR W/O INSURANCE":111900,"SUM INSURED":111900,"BASIC PREMIUM":3610,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1qg6pilZdCyuuMVcGXYThswLNz5QTh2_E","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L S","MODEL":"WR-V","SELLING PRICE":89560,"OTR W/O INSURANCE":89900,"SUM INSURED":89900,"BASIC PREMIUM":3038,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L E","MODEL":"WR-V","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L V","MODEL":"WR-V","SELLING PRICE":99560,"OTR W/O INSURANCE":99900,"SUM INSURED":99900,"BASIC PREMIUM":3298,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"WR-V 1.5L RS","MODEL":"WR-V","SELLING PRICE":107560,"OTR W/O INSURANCE":107900,"SUM INSURED":107900,"BASIC PREMIUM":3506,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1BKmYgo0aHaO-d0vfKJJ-jPXW0D049lbB","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CR-V 1.5L S","MODEL":"CR-V","SELLING PRICE":159530,"OTR W/O INSURANCE":159900,"SUM INSURED":159900,"BASIC PREMIUM":4408,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CR-V 2.0L E:HEV E","MODEL":"CR-V","SELLING PRICE":177362.8,"OTR W/O INSURANCE":178200,"SUM INSURED":178200,"BASIC PREMIUM":4902,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":437.2,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"CR-V 1.5L V","MODEL":"CR-V","SELLING PRICE":181530,"OTR W/O INSURANCE":181900,"SUM INSURED":181900,"BASIC PREMIUM":4980,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CR-V 2.0L E:HEV RS","MODEL":"CR-V","SELLING PRICE":195062.8,"OTR W/O INSURANCE":195900,"SUM INSURED":195900,"BASIC PREMIUM":5344,"REBATE":7000,"IMAGE URL":"https://drive.google.com/open?id=1vC8vbyx_VSfRfzJ9ElbEPOoB0h-c9drG","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":437.2,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK S","MODEL":"CITY HATCHBACK","SELLING PRICE":85560,"OTR W/O INSURANCE":85900,"SUM INSURED":85900,"BASIC PREMIUM":2934,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK E","MODEL":"CITY HATCHBACK","SELLING PRICE":90560,"OTR W/O INSURANCE":90900,"SUM INSURED":90900,"BASIC PREMIUM":3064,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK V","MODEL":"CITY HATCHBACK","SELLING PRICE":95560,"OTR W/O INSURANCE":95900,"SUM INSURED":95900,"BASIC PREMIUM":3194,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK RS","MODEL":"CITY HATCHBACK","SELLING PRICE":100560,"OTR W/O INSURANCE":100900,"SUM INSURED":100900,"BASIC PREMIUM":3324,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CITY HATCHBACK E:HEV RS","MODEL":"CITY HATCHBACK","SELLING PRICE":112560,"OTR W/O INSURANCE":112900,"SUM INSURED":112900,"BASIC PREMIUM":3636,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=17azt1Ovpz1tzi0xt2KedsZGVaxaSg46T","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 1.5L E","MODEL":"CIVIC","SELLING PRICE":133560,"OTR W/O INSURANCE":133900,"SUM INSURED":133900,"BASIC PREMIUM":4182,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 1.5L V","MODEL":"CIVIC","SELLING PRICE":144560,"OTR W/O INSURANCE":144900,"SUM INSURED":144900,"BASIC PREMIUM":4468,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 1.5L RS","MODEL":"CIVIC","SELLING PRICE":149560,"OTR W/O INSURANCE":149900,"SUM INSURED":149900,"BASIC PREMIUM":4598,"REBATE":12000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":90,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"CIVIC 2.0L E:HEV RS","MODEL":"CIVIC","SELLING PRICE":167123.5,"OTR W/O INSURANCE":167900,"SUM INSURED":167900,"BASIC PREMIUM":5066,"REBATE":8000,"IMAGE URL":"https://drive.google.com/open?id=1FUowo0QP7ufwyByqH7YLbZhyatXbvNj2","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":376.5,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5L S","MODEL":"HR-V","SELLING PRICE":115530,"OTR W/O INSURANCE":115900,"SUM INSURED":115900,"BASIC PREMIUM":3714,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5T E","MODEL":"HR-V","SELLING PRICE":130530,"OTR W/O INSURANCE":130900,"SUM INSURED":130900,"BASIC PREMIUM":4104,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5T V","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":10000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5L E:HEV RS","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":13000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"E:N1","MODEL":"E:N1","SELLING PRICE":149402,"OTR W/O INSURANCE":150010,"SUM INSURED":150000,"BASIC PREMIUM":4624,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=1YdIZVYxr6qns1QgdYjJBnU9nBLQNBNnq","BRAND":"HONDA","PLATE NUMBER":98,"ROADTAX":160,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"PRELUDE","MODEL":"PRELUDE","SELLING PRICE":277173.5,"OTR W/O INSURANCE":277950,"SUM INSURED":278000,"BASIC PREMIUM":7952,"REBATE":0,"IMAGE URL":"https://drive.google.com/open?id=12pyWxzalqK10BDjtbU-l5Ar0z-tszXFc","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":376.5,"REGISTRATION FEE":300,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5T V 360","MODEL":"HR-V","SELLING PRICE":137530,"OTR W/O INSURANCE":137900,"SUM INSURED":137900,"BASIC PREMIUM":4286,"REBATE":6000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50},{"VARIANT":"HR-V 1.5L E:HEV RS 360","MODEL":"HR-V","SELLING PRICE":143530,"OTR W/O INSURANCE":143900,"SUM INSURED":143900,"BASIC PREMIUM":4442,"REBATE":9000,"IMAGE URL":"https://drive.google.com/open?id=1MgImhu0AoXl_YEZBQQMmzlypZNlP6sVY","BRAND":"HONDA","PLATE NUMBER":50,"ROADTAX":120,"REGISTRATION FEE":150,"OWNERSHIP":50}];;
@@ -1986,6 +2005,86 @@ function openVsoModal(){
 }
 function closeVsoModal(){
   document.getElementById('vsoModal').classList.remove('open');
+}
+
+// ── Stock Availability — fetched fresh every time the modal opens
+// (never cached), since physical inventory changes throughout the day.
+// Grouped by Model Cat. -> Variant, with a count per Vehicle Status. ──
+async function openStockModal(){
+  document.getElementById('stockModal').classList.add('open');
+  const container = document.getElementById('stockSummary');
+  container.innerHTML = '<div class="addon-item" style="cursor:default;color:var(--muted-2);font-family:\'IBM Plex Mono\',monospace;font-size:12px;">Loading stock…</div>';
+  try{
+    const res = await fetch(GAS_URL + '?type=stock', {method:'GET'});
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const rows = Array.isArray(json) ? json : (json.data || json.rows || []);
+    renderStockSummary(rows);
+  }catch(err){
+    console.warn('Stock fetch failed:', err);
+    container.innerHTML = '<div class="addon-item" style="cursor:default;color:var(--muted-2);font-family:\'IBM Plex Mono\',monospace;font-size:12px;">Stock data unavailable right now</div>';
+  }
+}
+function closeStockModal(){
+  document.getElementById('stockModal').classList.remove('open');
+}
+
+function renderStockSummary(rows){
+  const container = document.getElementById('stockSummary');
+
+  const byModel = {};
+  rows.forEach(r => {
+    const model = (r['Model Cat.'] || r['Model Cat'] || 'Unknown').toString().trim();
+    const variant = (r['Variants'] || r['Variant'] || '').toString().trim();
+    const colour = (r['Colour'] || r['Color'] || 'Unspecified').toString().trim();
+    const status = (r['Vehicle Status'] || 'Unknown').toString().trim();
+    if(!variant) return;
+    if(!byModel[model]) byModel[model] = {};
+    if(!byModel[model][variant]) byModel[model][variant] = {};
+    if(!byModel[model][variant][colour]) byModel[model][variant][colour] = {};
+    byModel[model][variant][colour][status] = (byModel[model][variant][colour][status] || 0) + 1;
+  });
+
+  const modelNames = Object.keys(byModel).sort();
+
+  if(!modelNames.length){
+    container.innerHTML = '<div class="addon-item" style="cursor:default;color:var(--muted-2);font-family:\'IBM Plex Mono\',monospace;font-size:12px;">No stock data found</div>';
+    return;
+  }
+
+  container.innerHTML = modelNames.map(model => {
+    const variants = byModel[model];
+    const variantNames = Object.keys(variants).sort();
+    const rowsHtml = variantNames.map(variant => {
+      const colours = variants[variant];
+      const colourNames = Object.keys(colours).sort();
+      const total = colourNames.reduce((sum, c) => sum + Object.values(colours[c]).reduce((a,b) => a+b, 0), 0);
+
+      const colourRows = colourNames.map(colour => {
+        const statuses = colours[colour];
+        const colourTotal = Object.values(statuses).reduce((a,b) => a+b, 0);
+        const statusText = Object.keys(statuses).sort().map(s => `${s}: ${statuses[s]}`).join(' · ');
+        return `
+          <div style="display:flex;justify-content:space-between;gap:8px;padding:3px 12px;font-size:10.5px;color:var(--muted);border-top:1px solid var(--line);background:var(--card);">
+            <span>${colour}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;flex-shrink:0;">${colourTotal} · ${statusText}</span>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="addon-item" style="cursor:default;">
+          <span style="flex:1;">${variant}</span>
+          <span class="addon-price">${total} unit${total !== 1 ? 's' : ''}</span>
+        </div>
+        ${colourRows}
+      `;
+    }).join('');
+    return `
+      <div class="live-subrow-label" style="margin-top:14px;">${model}</div>
+      <div class="addon-list">${rowsHtml}</div>
+    `;
+  }).join('');
 }
 async function sendVSO(){
   if(!selected) return;
