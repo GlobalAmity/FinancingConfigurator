@@ -101,6 +101,12 @@
   .src-badge.loading{background:var(--card);color:var(--muted);border-color:var(--line);}
   .user-greeting{font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;color:var(--muted);white-space:nowrap;}
   .user-greeting b{color:var(--text);font-weight:600;}
+  .logout-btn{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;
+    background:none;border:1px solid var(--line-strong);color:var(--muted);padding:4px 9px;cursor:pointer;
+    transition:all .15s ease;
+  }
+  .logout-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
 
   /* ============================= HERO ============================= */
   .hero{padding:36px 0 8px;}
@@ -624,6 +630,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:14px;">
       <span class="user-greeting" id="userGreeting" style="display:none;"></span>
+      <button type="button" class="logout-btn" id="logoutBtn" onclick="logout()" title="Log out — needed when sharing a device with your team" style="display:none;">Logout</button>
       <span class="src-badge" id="srcBadge">loading…</span>
       <button type="button" class="scale-btn" id="scaleBtn" onclick="toggleLiveMode()" title="Simplify the view for live/screen recording">
         <span id="scaleIcon">🎥</span><span id="scaleLabel">Live Mode</span>
@@ -2552,6 +2559,7 @@ function showGateState(state){
 function unlockApp(){
   document.getElementById('loginGate').style.display = 'none';
   document.getElementById('appContent').style.display = '';
+  document.getElementById('logoutBtn').style.display = '';
   updateGreeting();
   initTheme();
   initLiveMode();
@@ -2635,6 +2643,23 @@ function checkAccessAgain(){
 function resetGateToEntry(){
   try{ localStorage.removeItem(ACCESS_KEY); }catch(e){}
   currentAccessEmail = null;
+  currentAccessName = '';
+  document.getElementById('loginEmailInput').value = '';
+  document.getElementById('loginError').textContent = '';
+  showGateState('entry');
+  document.getElementById('loginEmailInput').focus();
+}
+
+// Logs out of the current email — needed when a team shares one device,
+// so the next SA can sign in as themselves instead of inheriting
+// whoever used it last.
+function logout(){
+  if(!confirm('Log out of this session? Any unsaved configuration on screen will be lost.')) return;
+  try{ localStorage.removeItem(ACCESS_KEY); }catch(e){}
+  currentAccessEmail = null;
+  currentAccessName = '';
+  document.getElementById('appContent').style.display = 'none';
+  document.getElementById('loginGate').style.display = '';
   document.getElementById('loginEmailInput').value = '';
   document.getElementById('loginError').textContent = '';
   showGateState('entry');
